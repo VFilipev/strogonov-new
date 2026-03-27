@@ -46,9 +46,9 @@ const { showServicesNav } = useNavVisibility();
             </li>
             <li>
               <a
-                href="tel:+73422880089"
+                href="tel:+73422333332"
                 class="transition-colors hover:text-foreground"
-                >+7 (342) 288-00-89</a
+                >+7 (342) 2-33-33-32</a
               >
             </li>
             <li>

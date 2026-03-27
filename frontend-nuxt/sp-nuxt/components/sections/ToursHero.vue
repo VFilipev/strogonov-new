@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="hidden items-center gap-4 md:flex">
           <a
-            href="tel:+79991234567"
+            href="tel:+73422333332"
             class="transition-transform duration-300 text-primary-foreground hover:scale-110 hover:text-primary-foreground/80"
           >
             <Phone class="h-5 w-5" />
@@ -238,12 +238,12 @@ onBeforeUnmount(() => {
             >мероприятия</a
           >
           <a
-            href="tel:+79991234567"
+            href="tel:+73422333332"
             class="mt-2 inline-flex w-fit items-center gap-2 transition-transform duration-300 text-primary-foreground hover:scale-105 hover:text-primary-foreground/80"
             @click="closeMobileMenu"
           >
             <Phone class="h-5 w-5" />
-            <span>+7 (999) 123-45-67</span>
+            <span>+7 (342) 2-33-33-32</span>
           </a>
         </div>
       </div>

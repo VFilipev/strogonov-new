@@ -121,13 +121,13 @@ const { showServicesNav, showToursNav } = useNavVisibility()
         <div class="flex flex-col gap-3 text-primary-foreground">
           <NuxtLink :class="getLinkClass('complain')" to="/complain" @click="closeMobileMenu">ваше мнение</NuxtLink>
           <NuxtLink :class="getLinkClass('lodge')" to="/lodge" @click="closeMobileMenu">дома</NuxtLink>
-          <a
+          <!-- <a
             v-if="showServicesNav"
             :class="getLinkClass('services')"
             href="/#active"
             @click="closeMobileMenu"
             >услуги</a
-          >
+          > -->
           <NuxtLink
             v-if="showToursNav"
             :class="getLinkClass('tours')"
