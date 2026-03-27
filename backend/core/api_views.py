@@ -1,0 +1,47 @@
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    base_url = request.build_absolute_uri('/api/').rstrip('/')
+
+    return Response({
+        'lodges': {
+            'list': f'{base_url}/lodges/',
+            'types': f'{base_url}/lodges/types/',
+        },
+        'activities': {
+            'list': f'{base_url}/activities/',
+        },
+        'events': {
+            'list': f'{base_url}/events/',
+        },
+        'news': {
+            'list': f'{base_url}/news/',
+        },
+        'restaurant': {
+            'detail': f'{base_url}/restaurant/',
+            'images': f'{base_url}/restaurant/images/',
+            'meal-types': f'{base_url}/restaurant/meal-types/',
+            'benefits': f'{base_url}/restaurant/benefits/',
+        },
+        'core': {
+            'afisha': f'{base_url}/afisha/',
+            'hero': f'{base_url}/hero/',
+            'site-settings': f'{base_url}/site-settings/',
+            'statistics': f'{base_url}/statistics/',
+            'gallery': f'{base_url}/gallery/',
+            'guest-feedback': f'{base_url}/guest-feedback/',
+            'admin-status': f'{base_url}/auth/admin-status/',
+            'csrf': f'{base_url}/auth/csrf/',
+            'hero-edit-active': f'{base_url}/auth/edit/hero/active/',
+            'statistic-edit': f'{base_url}/auth/edit/statistics/<id>/',
+            'gallery-all-admin': f'{base_url}/auth/edit/gallery/all/',
+            'gallery-upload': f'{base_url}/auth/edit/gallery/upload/',
+            'gallery-apply': f'{base_url}/auth/edit/gallery/apply/',
+        },
+        'sitemap': f'{base_url}/sitemap.xml',
+        'robots': f'{base_url}/robots.txt',
+    })
+

@@ -1,0 +1,131 @@
+<script setup>
+import FooterSection from "~/components/sections/FooterSection.vue";
+
+const {
+  isAdmin,
+  adminName,
+  isEditMode,
+  pending: adminStatusPending,
+  toggleEditMode,
+} = useAdminEditMode()
+
+const { data: siteSettings } = useSiteSettings()
+const siteIsActive = computed(() => siteSettings.value?.site_active !== false)
+
+const config = useRuntimeConfig()
+const siteUrl = config.public.siteUrl
+const apiBase = config.public.apiBase
+
+useHead({
+  link: [
+    { rel: 'preconnect', href: apiBase },
+    { rel: 'dns-prefetch', href: apiBase },
+  ],
+})
+
+useHead({
+  title: 'Строгановские Просторы - Коттеджи и глэмпинг',
+  meta: [
+    {
+      name: 'description',
+      content: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
+    },
+  ],
+  link: [
+    { rel: 'canonical', href: siteUrl },
+  ],
+})
+
+useSeoMeta({
+  title: 'Строгановские Просторы - Коттеджи и глэмпинг',
+  description: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
+  ogTitle: 'Строгановские Просторы',
+  ogDescription: 'Уютные коттеджи и глэмпинг на берегу камского моря',
+  ogImage: `${siteUrl}/images/hero-cottages.jpg`,
+  ogUrl: siteUrl,
+  ogType: 'website',
+  ogLocale: 'ru_RU',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Строгановские Просторы',
+  twitterDescription: 'Уютные коттеджи и глэмпинг на берегу камского моря',
+  twitterImage: `${siteUrl}/images/hero-cottages.jpg`,
+})
+
+useStructuredData({
+  '@context': 'https://schema.org',
+  '@type': 'TouristAttraction',
+  name: 'Строгановские Просторы',
+  description: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
+  url: siteUrl,
+  image: `${siteUrl}/images/hero-cottages.jpg`,
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'RU',
+    addressRegion: 'Пермский край',
+  },
+  offers: {
+    '@type': 'Offer',
+    priceCurrency: 'RUB',
+  },
+})
+</script>
+
+<template>
+  <div class="min-h-screen bg-background text-foreground">
+    <div
+      v-if="isAdmin"
+      class="fixed right-4 top-4 z-[60] flex items-center gap-2 rounded-full border border-primary/20 bg-background/95 p-1 shadow-lg backdrop-blur"
+    >
+      <span class="px-2 text-xs text-muted-foreground">
+        {{ adminName ? `Админ: ${adminName}` : "Админ" }}
+      </span>
+      <button
+        class="rounded-full px-3 py-2 text-xs font-semibold transition-colors"
+        :class="
+          isEditMode
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-foreground hover:bg-muted/80'
+        "
+        :disabled="adminStatusPending"
+        @click="toggleEditMode"
+      >
+        {{ isEditMode ? "Режим редактирования: ВКЛ" : "Режим редактирования: ВЫКЛ" }}
+      </button>
+    </div>
+
+    <!-- Критичные компоненты для первого рендера - загружаются сразу -->
+    <HeroSection :edit-mode="isEditMode" :hide-navigation="!siteIsActive" />
+
+    <template v-if="siteIsActive">
+      <ClientOnly>
+        <GalleryStatsSection :edit-mode="isEditMode" />
+        <template #fallback>
+          <div
+            class="min-h-[min(85vh,960px)] bg-[hsl(36_18%_91%)]"
+            aria-hidden="true"
+          />
+        </template>
+      </ClientOnly>
+
+      <ClientOnly>
+        <LazyLodgeSection />
+        <LazyPeacefulRestSection />
+        <LazyActiveRestSection />
+        <LazyEventsSection />
+        <LazyRestaurantSection />
+        <LazyNewsSection />
+        <template #fallback>
+          <div
+            class="min-h-[min(200vh,3000px)] bg-background"
+            aria-hidden="true"
+          />
+        </template>
+      </ClientOnly>
+    </template>
+
+    <SiteMaintenanceSection v-else />
+
+    <FooterSection />
+  </div>
+</template>
+

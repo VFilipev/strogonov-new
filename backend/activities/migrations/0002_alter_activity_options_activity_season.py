@@ -1,0 +1,22 @@
+                                             
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('activities', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AlterModelOptions(
+            name='activity',
+            options={'ordering': ['category', 'season', 'order', 'title'], 'verbose_name': 'Активность', 'verbose_name_plural': 'Активности'},
+        ),
+        migrations.AddField(
+            model_name='activity',
+            name='season',
+            field=models.CharField(blank=True, choices=[('winter', 'Зима'), ('summer', 'Лето')], help_text='Сезон активности (зима или лето)', max_length=20, null=True, verbose_name='Сезон'),
+        ),
+    ]

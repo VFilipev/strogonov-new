@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="afisha-bg" x1="0" y1="0" x2="800" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b4134"/>
+      <stop offset="1" stop-color="#0a352b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#afisha-bg)"/>
+  <path d="M0 360c120-40 240-20 400 10s280 30 400-10v140H0V360z" fill="#fff" fill-opacity="0.04"/>
+  <g stroke="#fff" stroke-opacity="0.22" stroke-width="2.5">
+    <rect x="310" y="140" width="180" height="200" rx="10"/>
+    <line x1="310" y1="195" x2="490" y2="195"/>
+    <path stroke-linecap="round" d="M355 115v50M445 115v50"/>
+  </g>
+  <g fill="#fff" fill-opacity="0.18">
+    <circle cx="355" cy="235" r="10"/>
+    <circle cx="400" cy="235" r="10"/>
+    <circle cx="445" cy="235" r="10"/>
+    <circle cx="355" cy="275" r="10"/>
+    <circle cx="400" cy="275" r="10"/>
+    <circle cx="445" cy="275" r="10"/>
+  </g>
+</svg>

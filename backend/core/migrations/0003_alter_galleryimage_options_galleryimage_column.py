@@ -1,0 +1,22 @@
+                                             
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('core', '0002_herosection_heroimage'),
+    ]
+
+    operations = [
+        migrations.AlterModelOptions(
+            name='galleryimage',
+            options={'ordering': ['position', 'column', 'order', 'id'], 'verbose_name': 'Изображение галереи', 'verbose_name_plural': 'Изображения галереи'},
+        ),
+        migrations.AddField(
+            model_name='galleryimage',
+            name='column',
+            field=models.CharField(blank=True, choices=[('left', 'Левая колонка'), ('center', 'Центральная колонка'), ('right', 'Правая колонка')], help_text='Колонка для основной галереи (left/center/right). Используется только для position="main"', max_length=10, null=True, verbose_name='Колонка'),
+        ),
+    ]

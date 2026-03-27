@@ -1,0 +1,111 @@
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import LodgeType, Lodge, LodgeImage, LodgePrice, LodgeAvailability
+
+
+class LodgeImageInline(admin.TabularInline):
+
+    model = LodgeImage
+    extra = 1
+    fields = ['image', 'alt_text', 'order']
+    ordering = ['order']
+
+
+class LodgePriceInline(admin.TabularInline):
+    model = LodgePrice
+    extra = 1
+    fields = ['name', 'cost', 'order', 'is_active']
+    ordering = ['order']
+
+
+class LodgeAvailabilityInline(admin.TabularInline):
+    model = LodgeAvailability
+    extra = 1
+    fields = ['name', 'order']
+    ordering = ['order']
+
+
+@admin.register(LodgeType)
+class LodgeTypeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug', 'is_active', 'order']
+    list_filter = ['is_active']
+    search_fields = ['name', 'description', 'subtitle']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['order', 'name']
+
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'slug', 'subtitle', 'description', 'is_active', 'order')
+        }),
+        ('Медиа', {
+            'fields': ('hero_image',)
+        }),
+        ('SEO', {
+            'classes': ('collapse',),
+            'fields': (
+                'meta_title', 'meta_description', 'meta_keywords',
+                'og_title', 'og_description', 'og_image',
+                'canonical_url', 'robots_meta'
+            )
+        }),
+    )
+
+
+@admin.register(Lodge)
+class LodgeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'lodge_type', 'capacity', 'area', 'price_from', 'is_active', 'order']
+    list_filter = ['lodge_type', 'is_active']
+    search_fields = ['name', 'description', 'short_description', 'location_description']
+    prepopulated_fields = {'slug': ('name',)}
+    inlines = [LodgeImageInline, LodgePriceInline, LodgeAvailabilityInline]
+    ordering = ['order', 'name']
+
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('lodge_type', 'name', 'slug', 'description', 'short_description', 'is_active', 'order')
+        }),
+        ('Характеристики', {
+            'fields': ('capacity', 'area', 'price_from', 'location_description')
+        }),
+        ('Дополнительная информация', {
+            'fields': ('conveniences', 'include', 'bronirui_online_url')
+        }),
+        ('SEO', {
+            'classes': ('collapse',),
+            'fields': (
+                'meta_title', 'meta_description', 'meta_keywords',
+                'og_title', 'og_description', 'og_image',
+                'canonical_url', 'robots_meta'
+            )
+        }),
+    )
+
+
+@admin.register(LodgeImage)
+class LodgeImageAdmin(admin.ModelAdmin):
+    list_display = ['lodge', 'alt_text', 'order', 'image_preview']
+    list_filter = ['lodge']
+    search_fields = ['lodge__name', 'alt_text']
+    ordering = ['lodge', 'order', 'id']
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 50px; max-width: 50px;" />', obj.image.url)
+        return '-'
+    image_preview.short_description = 'Превью'
+
+
+@admin.register(LodgePrice)
+class LodgePriceAdmin(admin.ModelAdmin):
+    list_display = ['lodge', 'name', 'cost', 'is_active', 'order']
+    list_filter = ['is_active', 'lodge']
+    search_fields = ['lodge__name', 'name']
+    ordering = ['lodge', 'order']
+
+
+@admin.register(LodgeAvailability)
+class LodgeAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ['lodge', 'name', 'order']
+    list_filter = ['lodge']
+    search_fields = ['lodge__name', 'name']
+    ordering = ['lodge', 'order']
