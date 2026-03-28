@@ -39,8 +39,11 @@ const {
     <div class="container">
       <div class="row">
         <div class="col-12 col-sm-6">
-          <div class="d-flex justify-content-between align-items-center">
-            <h4 class="section_name">{{ title }}</h4>
+          <div class="house_header">
+            <h4 class="section_name section_name--mobile">{{ title }}</h4>
+          </div>
+          <div class="d-flex justify-content-between align-items-center house_selector_row">
+            <h4 class="section_name section_name--desktop">{{ title }}</h4>
             <div class="d-flex container_icon align-items-center gap-2">
               <div class="circle-left" @click="decSelectHouseIndex"></div>
               <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem">
@@ -154,7 +157,14 @@ const {
                         class="house__image"
                         :style="{ backgroundImage: `url(${house.img})` }"
                         @click="openPhotoViewer(house, 0)"
-                      ></div>
+                      >
+                        <span
+                          v-if="house?.photo_gallery_set?.length"
+                          class="house__image_hint"
+                        >
+                          Нажмите на фото, чтобы открыть галерею
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div class="row row_swiper">
@@ -355,7 +365,12 @@ const {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+  position: relative;
   cursor: pointer;
+}
+
+.house__image_hint {
+  display: none;
 }
 
 .house__name {
@@ -374,6 +389,10 @@ const {
   font-size: 47px;
   font-family: 'Apoc Normal', serif;
   font-weight: 300;
+}
+
+.section_name--mobile {
+  display: none;
 }
 
 .house_typ {
@@ -503,6 +522,55 @@ button.toBooking--disabled {
   .house__name_description {
     margin-bottom: 0px;
     font-size: 15px;
+  }
+}
+
+@media (max-width: 575px) {
+  .house_header {
+    display: flex;
+    justify-content: center;
+  }
+
+  .house_selector_row {
+    justify-content: center;
+  }
+
+  .container_icon {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section_name--mobile {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .section_name--desktop {
+    display: none;
+  }
+
+  .row_swiper {
+    display: none;
+  }
+
+  .house__image_hint {
+    display: block;
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    background-color: rgba(0, 60, 48, 0.72);
+    color: #fff;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 16px;
+    padding: 8px 10px;
+    pointer-events: none;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
   }
 }
 

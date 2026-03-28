@@ -72,7 +72,7 @@ onMounted(async () => {
 <template>
   <div>
     <SiteHeaderNavigation active-page="lodge" />
-    <main class="pt-32 main-bg">
+    <main class="pt-20 lg:pt-32 main-bg">
       <WoodenHousesSection
         ref="woodenSectionRef"
         :houses="houseList"

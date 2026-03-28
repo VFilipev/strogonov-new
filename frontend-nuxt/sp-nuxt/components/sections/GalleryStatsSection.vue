@@ -738,7 +738,7 @@ onBeforeUnmount(() => {
         :style="{ transitionDelay: isVisible ? '400ms' : '0ms' }"
       >
         <div
-          class="overflow-hidden rounded-2xl border border-border/50 bg-card/80 shadow-2xl backdrop-blur"
+          class="order-2 overflow-hidden rounded-2xl border border-border/50 bg-card/80 shadow-2xl backdrop-blur lg:order-1"
         >
           <div class="relative">
             <NuxtImg
@@ -755,7 +755,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div class="space-y-4">
+        <div class="order-1 space-y-4 lg:order-2">
           <h3 class="text-3xl font-serif text-primary md:text-4xl">
             {{ editablePlanTitle }}
           </h3>

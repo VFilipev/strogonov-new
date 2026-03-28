@@ -13,6 +13,8 @@ const props = defineProps({
 })
 
 const activeIndex = ref(0)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
 
 const hasMultiple = computed(() => (props.images?.length || 0) > 1)
 
@@ -30,6 +32,40 @@ const handleMouseMove = (e) => {
 const handleMouseLeave = () => {
   activeIndex.value = 0
 }
+
+const showPrev = () => {
+  if (!hasMultiple.value) return
+  activeIndex.value = activeIndex.value > 0 ? activeIndex.value - 1 : props.images.length - 1
+}
+
+const showNext = () => {
+  if (!hasMultiple.value) return
+  activeIndex.value = activeIndex.value < props.images.length - 1 ? activeIndex.value + 1 : 0
+}
+
+const handleTouchStart = (e) => {
+  if (!hasMultiple.value) return
+  const touch = e.touches?.[0]
+  if (!touch) return
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+}
+
+const handleTouchMove = (e) => {
+  if (!hasMultiple.value) return
+  const touch = e.touches?.[0]
+  if (!touch) return
+  const deltaX = touch.clientX - touchStartX.value
+  const deltaY = touch.clientY - touchStartY.value
+  if (Math.abs(deltaX) < 32 || Math.abs(deltaX) <= Math.abs(deltaY)) return
+  if (deltaX > 0) {
+    showPrev()
+  } else {
+    showNext()
+  }
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+}
 </script>
 
 <template>
@@ -38,6 +74,8 @@ const handleMouseLeave = () => {
     :class="heightClass"
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
   >
     <NuxtImg
       v-for="(img, index) in images"
