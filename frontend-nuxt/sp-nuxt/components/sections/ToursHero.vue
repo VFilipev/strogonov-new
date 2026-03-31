@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { Menu, Phone, X } from "lucide-vue-next";
+import { ChevronDown, Menu, Phone, X } from "lucide-vue-next";
 import logo from "~/assets/resort/logo.webp";
 import nac from "~/assets/resort/nac.webp";
 import heroImage from "~/assets/resort/preview.webp";
@@ -47,6 +47,16 @@ const handleScroll = () => {
 
 const closeMobileMenu = () => {
   mobileMenuOpen.value = false;
+};
+
+const scrollToContentBelow = () => {
+  if (!import.meta.client) return;
+  const viewportHeight = window.innerHeight || 0;
+  const targetTop = Math.max(viewportHeight - 80, 0);
+  window.scrollTo({
+    top: targetTop,
+    behavior: "smooth",
+  });
 };
 
 watch(mobileMenuOpen, (isOpen) => {
@@ -287,6 +297,20 @@ onBeforeUnmount(() => {
           >
             забронировать
           </a>
+        </div>
+        <div class="mt-6 flex justify-center md:mt-8">
+          <button
+            type="button"
+            class="group flex flex-col items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 p-2 text-primary-foreground/85 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-primary-foreground/35 hover:bg-primary-foreground/12 hover:text-primary-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground/80 motion-safe:animate-hero-scroll-hint"
+            aria-label="Прокрутить к контенту ниже"
+            @click="scrollToContentBelow"
+          >
+            <ChevronDown
+              class="h-6 w-6 transition-transform duration-300 group-hover:translate-y-0.5 md:h-7 md:w-7"
+              aria-hidden="true"
+              stroke-width="2"
+            />
+          </button>
         </div>
       </div>
     </div>

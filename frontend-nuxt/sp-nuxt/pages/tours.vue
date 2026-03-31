@@ -1,76 +1,104 @@
 <script setup>
-import { ref, computed } from "vue";
-import {
-  ArrowRight,
-  Check,
-  Compass,
-  Mountain,
-  Shield,
-  Sparkles,
-  Wrench,
-} from "lucide-vue-next";
+import { ArrowRight, Clock3, Gauge, MapPinned, ShieldCheck, Users } from "lucide-vue-next";
 import ToursHero from "~/components/sections/ToursHero.vue";
+import tourCardImage from "~/assets/resort/123.webp";
+import galleryHero from "~/assets/tours/hero.webp";
+import galleryHero6 from "~/assets/tours/hero6.webp";
+import galleryHero7 from "~/assets/tours/hero7.webp";
+import galleryHero8 from "~/assets/tours/hero8.webp";
+import galleryHero9 from "~/assets/tours/hero9.webp";
+import galleryHero10 from "~/assets/tours/hero10.webp";
+import galleryHero11 from "~/assets/tours/hero11.webp";
 
 const config = useRuntimeConfig();
 const siteUrl = config.public.siteUrl;
+const bookingPhone = "+7 (342) 233-33-32";
+const bookingTel = "tel:+73422333332";
 
 const heroIntro =
-  "Устали от города? Пришло время сменить декорации. Садитесь за руль мощного снегохода и рвите с привычной реальностью.";
+  "Незабываемые туры на квадроциклах в Пермском крае: премиальная техника TGB, сопровождение гида и полный комплект экипировки.";
 
-const {
-  freedomPoints,
-  whyUs,
-  tours,
-  instructors,
-  preparationItems,
-  equipmentItems,
-} = useSnowmobileToursPage();
+const formatRub = (value) => `${new Intl.NumberFormat("ru-RU").format(value)} руб`;
 
-const formatRub = (value) =>
-  `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+const quadTours = [
+  {
+    id: "rassvet",
+    title: "Рассвет",
+    duration: "210 минут",
+    group: "до 5 квадроциклов",
+    difficulty: "легкая",
+    price: 15000,
+  },
+  {
+    id: "bolotnyy-dozor",
+    title: "Болотный дозор",
+    duration: "380 минут",
+    group: "до 8 квадроциклов",
+    difficulty: "средняя",
+    price: 22500,
+  },
+  {
+    id: "gryazevoy-apokalipsis",
+    title: "Грязевой апокалипсис",
+    duration: "130 минут",
+    group: "до 4 квадроциклов",
+    difficulty: "экстрим",
+    price: 17000,
+  },
+  {
+    id: "vedmin-krug",
+    title: "Ведьмин круг",
+    duration: "22 часа",
+    group: "до 12 квадроциклов",
+    difficulty: "тяжелая",
+    price: 55000,
+  },
+];
 
-const summaryStats = computed(() => {
-  if (!tours.length) {
-    return [
-      { label: "Маршрутов", value: "0" },
-      { label: "Макс. дистанция", value: "0 км" },
-      { label: "Стоимость", value: "по запросу" },
-    ];
-  }
+const includedItems = [
+  {
+    title: "Аренда премиальной техники",
+    text: "Квадроцикл TGB Blade LTX EPS с двигателем 600 куб.см и 45 л.с.",
+  },
+  {
+    title: "Квалифицированный инструктаж",
+    text: "По технике безопасности и эксплуатации мотовездехода.",
+  },
+  {
+    title: "Комплект профессиональной экипировки",
+    text: "Для защиты вашего здоровья и повседневной одежды.",
+  },
+  {
+    title: "Сопровождение гида",
+    text: "И помощь на всё время проведения тура.",
+  },
+  {
+    title: "Фото и видеосъемка",
+    text: "С дальнейшим монтажем и отправкой материалов.",
+  },
+  {
+    title: "Запрет на алкоголь",
+    text: "Для всех участников мероприятия.",
+  },
+];
 
-  const maxDistance = Math.max(...tours.map((tour) => tour.distanceKm));
-  const minPrice = Math.min(...tours.map((tour) => tour.priceRub));
-
-  return [
-    { label: "Маршрутов", value: String(tours.length) },
-    { label: "Макс. дистанция", value: `${maxDistance} км` },
-    { label: "Стоимость", value: `от ${formatRub(minPrice)}` },
-  ];
-});
-
-const requestName = ref("");
-const requestPhone = ref("");
-const requestTourId = ref("");
-const requestMessage = ref("");
-const requestSent = ref(false);
-
-const tourOptions = computed(() => [
-  { value: "", label: "Выберите маршрут" },
-  ...tours.map((t) => ({ value: t.id, label: `${t.title} (${t.distanceKm} км)` })),
-]);
-
-function submitRequest(e) {
-  e.preventDefault();
-  requestSent.value = true;
-}
+const tourGallery = [
+  { src: galleryHero11, alt: "Участник тура на квадроцикле" },
+  { src: galleryHero8, alt: "Квадроцикл и маршрут в лесу" },
+  { src: galleryHero, alt: "Квадроцикл на маршруте" },
+  { src: galleryHero9, alt: "Поездка по лесной дороге" },
+  { src: galleryHero6, alt: "Участник тура на водной преграде" },
+  { src: galleryHero10, alt: "Квадроцикл на пересеченной местности" },
+  { src: galleryHero7, alt: "Квадроцикл в динамике" },
+];
 
 useHead({
-  title: "Снегоходные маршруты — Строгановские Просторы",
+  title: "Туры на квадроциклах — Строгановские Просторы",
   meta: [
     {
       name: "description",
       content:
-        "Снегоходные туры по Пермскому краю: маршруты для новичков и опытных, сопровождение гида, техника и экипировка. База отдыха Строгановские Просторы.",
+        "Квадротуры в Пермском крае: маршруты разной сложности, сопровождение гида, экипировка, фото и видео отчет.",
     },
   ],
   link: [{ rel: "canonical", href: `${siteUrl}/tours` }],
@@ -79,427 +107,248 @@ useHead({
 
 <template>
   <div class="min-h-screen bg-background text-foreground">
-    <ToursHero :intro="heroIntro" />
+    <ToursHero
+      title="Незабываемые туры на квадроциклах"
+      :intro="heroIntro"
+    />
 
-    <section class="border-b border-border bg-background py-10 md:py-14">
+    <section id="tours-list" class="scroll-mt-24 border-b border-border bg-background py-16 md:py-24">
       <div class="container mx-auto px-6 md:px-8">
-        <div
-          class="rounded-3xl border border-border bg-card/90 p-6 shadow-sm md:p-8 lg:p-10"
-        >
-          <div class="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div>
-              <p
-                class="text-xs font-semibold uppercase tracking-[0.2em] text-primary/90"
-              >
-                Ваш не забываемый уикенд
-              </p>
-              <h2 class="mt-3 font-serif text-2xl text-primary md:text-3xl">
-                Все ключевое о турах за 30 секунд
-              </h2>
-              <p class="mt-4 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
-                Выбирайте сценарий под настроение: спокойная прогулка по лесу или
-                насыщенный маршрут с обзорными точками и сопровождением инструктора.
-              </p>
-              <div class="mt-6 flex flex-wrap gap-3">
-                <a
-                  href="#tours-list"
-                  class="inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Смотреть маршруты
-                  <ArrowRight class="h-4 w-4" aria-hidden="true" />
-                </a>
-                <a
-                  href="#request"
-                  class="inline-flex items-center rounded-full border border-primary/30 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary transition-colors hover:border-primary/60 hover:bg-primary/5"
-                >
-                  Забронировать дату
-                </a>
-              </div>
-            </div>
-
-            <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <article
-                v-for="item in summaryStats"
-                :key="item.label"
-                class="rounded-2xl border border-border bg-muted/30 p-4 text-center lg:text-left"
-              >
-                <p class="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                  {{ item.label }}
-                </p>
-                <p class="mt-2 font-serif text-2xl text-primary md:text-3xl">
-                  {{ item.value }}
-                </p>
-              </article>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="border-b border-border bg-muted/40 py-16 md:py-24">
-      <div class="container mx-auto px-6 md:px-8">
-        <h2
-          class="mx-auto max-w-3xl text-center font-serif text-2xl uppercase leading-snug tracking-[0.12em] text-primary md:text-3xl md:tracking-[0.16em]"
-        >
-          Почувствуйте настоящую свободу
+        <h2 class="font-serif text-3xl text-primary md:text-4xl">
+          Наши квадротуры
         </h2>
-        <div class="mt-12 grid gap-8 md:grid-cols-3">
+
+        <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           <article
-            v-for="(item, index) in freedomPoints"
-            :key="item.title"
-            class="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-8 shadow-sm transition-shadow hover:shadow-md"
-          >
-            <span
-              class="absolute right-4 top-4 font-serif text-5xl font-light text-primary/10 transition-colors group-hover:text-primary/15"
-              aria-hidden="true"
-              >{{ index + 1 }}</span
-            >
-            <Mountain
-              class="mb-4 h-8 w-8 text-primary"
-              aria-hidden="true"
-            />
-            <h3 class="mb-3 font-serif text-xl text-primary">
-              {{ item.title }}
-            </h3>
-            <p class="text-pretty leading-relaxed text-muted-foreground">
-              {{ item.text }}
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="py-16 md:py-24">
-      <div class="container mx-auto px-6 md:px-8">
-        <h2
-          class="mb-10 text-center font-serif text-3xl text-primary md:text-4xl"
-        >
-          Почему выбирают нас?
-        </h2>
-        <ul
-          class="mx-auto grid max-w-4xl gap-4 md:grid-cols-3"
-          role="list"
-        >
-          <li
-            v-for="(line, i) in whyUs"
-            :key="i"
-            class="flex gap-3 rounded-xl border border-border bg-card p-5 shadow-sm"
-          >
-            <span
-              class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-            >
-              <Check class="h-4 w-4" aria-hidden="true" />
-            </span>
-            <span class="leading-relaxed text-foreground">{{ line }}</span>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <section
-      id="tours-list"
-      class="scroll-mt-24 border-y border-border bg-muted/30 py-16 md:py-24"
-    >
-      <div class="container mx-auto px-6 md:px-8">
-        <div class="mb-12 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <p
-              class="text-xs font-semibold uppercase tracking-[0.2em] text-primary/90"
-            >
-              Туры
-            </p>
-            <h2 class="mt-2 font-serif text-3xl text-primary md:text-4xl">
-              Выберите маршрут
-            </h2>
-          </div>
-          <p class="max-w-xl text-pretty text-muted-foreground">
-            Два готовых сценария — от спокойного часа в лесу до насыщенного дня с
-            переходом к бобровой плотине.
-          </p>
-        </div>
-
-        <div class="grid gap-8 lg:grid-cols-2">
-          <article
-            v-for="tour in tours"
+            v-for="tour in quadTours"
             :key="tour.id"
-            class="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
-            <div
-              class="border-b border-border bg-gradient-to-br from-primary/8 via-primary/5 to-transparent px-6 py-6 md:px-8 md:flex md:items-baseline md:justify-between"
-            >
-              <div>
-                <p
-                  class="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary/90"
-                >
-                  <Compass class="h-3.5 w-3.5" aria-hidden="true" />
-                  Маршрут
-                </p>
-                <h3 class="mt-3 font-serif text-2xl text-primary md:text-3xl">
-                  {{ tour.title }}
-                </h3>
-              </div>
-              <p class="mt-3 text-sm font-medium uppercase tracking-wide text-muted-foreground md:mt-0">
-                {{ tour.distanceKm }} км
-              </p>
+            <div class="relative min-h-[170px] overflow-hidden bg-primary/95 px-5 py-6 text-primary-foreground">
+              <NuxtImg
+                :src="tourCardImage"
+                alt=""
+                class="absolute inset-0 h-full w-full object-cover opacity-85"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/55" />
+              <h3 class="relative mt-auto font-serif text-2xl text-primary-foreground">
+                {{ tour.title }}
+              </h3>
             </div>
-            <div class="flex flex-1 flex-col px-6 py-6 md:px-8">
-              <p class="flex-1 text-pretty leading-relaxed text-muted-foreground">
-                {{ tour.description }}
-              </p>
-              <dl
-                class="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-6 text-sm"
-              >
-                <div class="rounded-xl border border-border bg-muted/30 p-3">
-                  <dt class="text-xs uppercase tracking-wide text-muted-foreground">Возраст</dt>
-                  <dd class="mt-1 text-sm font-medium text-foreground">{{ tour.age }}</dd>
+
+            <div class="flex flex-1 flex-col px-5 py-5">
+              <dl class="space-y-2 text-sm">
+                <div class="flex items-start gap-2">
+                  <Clock3 class="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <div>
+                    <dt class="text-muted-foreground">Продолжительность:</dt>
+                    <dd class="font-semibold text-foreground">{{ tour.duration }}</dd>
+                  </div>
                 </div>
-                <div class="rounded-xl border border-border bg-muted/30 p-3">
-                  <dt class="text-xs uppercase tracking-wide text-muted-foreground">Посадка</dt>
-                  <dd class="mt-1 text-sm font-medium text-foreground">{{ tour.seats }}</dd>
+                <div class="flex items-start gap-2">
+                  <Users class="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <div>
+                    <dt class="text-muted-foreground">Группа:</dt>
+                    <dd class="font-semibold text-foreground">{{ tour.group }}</dd>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <Gauge class="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <div>
+                    <dt class="text-muted-foreground">Сложность:</dt>
+                    <dd class="font-semibold text-foreground">{{ tour.difficulty }}</dd>
+                  </div>
                 </div>
               </dl>
-              <p
-                class="mt-6 font-serif text-3xl font-semibold text-primary"
-              >
-                {{ formatRub(tour.priceRub) }}
+
+              <p class="mt-6 font-serif text-3xl font-semibold text-primary">
+                {{ formatRub(tour.price) }}
               </p>
+
               <a
                 href="#request"
-                class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary bg-primary px-6 py-3 text-center text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+                class="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                Оставить заявку
-                <ArrowRight
-                  class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
+                Забронировать
+                <ArrowRight class="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
           </article>
         </div>
+
+        <p class="mt-8 text-sm leading-relaxed text-muted-foreground">
+          * Стоимость указана за 1 человека, который будет управлять квадроциклом, возможность и цена размещения пассажира обговаривается отдельно и зависит от конкретного маршрута. Бронирование квадротуров происходит через оператора с внесением предоплаты в размере 20% от стоимости тура, в стоимость услуги не входит доставка клиента до точки проведения туристического мероприятия и обратный трансфер.
+        </p>
       </div>
     </section>
 
-    <section class="py-16 md:py-24">
+    <section class="border-b border-border bg-muted/30 py-16 md:py-24">
       <div class="container mx-auto px-6 md:px-8">
-        <h2
-          class="mb-12 text-center font-serif text-3xl text-primary md:text-4xl"
-        >
-          Инструкторы
+        <h2 class="font-serif text-3xl text-primary md:text-4xl">
+          Что входит в каждый тур
         </h2>
-        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <article
-            v-for="person in instructors"
-            :key="person.id"
-            class="rounded-2xl border border-border bg-card p-6 text-center shadow-sm"
-          >
-            <div
-              class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 font-serif text-2xl text-primary"
-              aria-hidden="true"
+
+        <div class="mt-10 rounded-3xl border-2 border-dashed border-primary/70 bg-card/80 p-5 md:p-8">
+          <div class="grid gap-4 md:grid-cols-2">
+            <article
+              v-for="(item, index) in includedItems"
+              :key="item.title"
+              class="relative rounded-2xl border border-border bg-background px-5 py-4"
             >
-              {{ person.name.charAt(0) }}
-            </div>
-            <h3 class="font-serif text-xl text-primary">
-              {{ person.name }}
-            </h3>
-            <p class="mt-1 text-sm font-medium text-primary/80">
-              {{ person.role }}
-            </p>
-            <p class="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-              {{ person.bio }}
-            </p>
-          </article>
+              <div
+                class="absolute -left-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-primary-foreground"
+                :class="item.title === 'Запрет на алкоголь' ? 'bg-red-600' : 'bg-primary'"
+              >
+                {{ index + 1 }}
+              </div>
+              <h3 class="font-semibold text-foreground">
+                {{ item.title }}
+              </h3>
+              <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {{ item.text }}
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <p class="mt-6 text-sm leading-relaxed text-muted-foreground">
+          В состав длительных и индивидуальных туров могут входить дополнительные услуги: рыбалка, сбор ягод и грибов, а также приготовление пищи в походных условиях.
+        </p>
+      </div>
+    </section>
+
+    <section class="border-b border-border bg-background py-16 md:py-24">
+      <div class="container mx-auto px-6 md:px-8">
+        <h2 class="text-center font-serif text-3xl text-primary md:text-4xl">
+          Фото и видео отчеты
+        </h2>
+        <div class="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div class="grid gap-4">
+            <article class="h-[240px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:h-[250px]">
+              <NuxtImg
+                :src="tourGallery[0].src"
+                :alt="tourGallery[0].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+            <article class="h-[240px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:h-[285px]">
+              <NuxtImg
+                :src="tourGallery[4].src"
+                :alt="tourGallery[4].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+          </div>
+
+          <div class="grid gap-4">
+            <article class="h-[170px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <NuxtImg
+                :src="tourGallery[1].src"
+                :alt="tourGallery[1].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+            <article class="h-[170px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <NuxtImg
+                :src="tourGallery[3].src"
+                :alt="tourGallery[3].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+            <article class="h-[170px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <NuxtImg
+                :src="tourGallery[5].src"
+                :alt="tourGallery[5].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+          </div>
+
+          <div class="grid gap-4">
+            <article class="h-[240px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:h-[250px]">
+              <NuxtImg
+                :src="tourGallery[2].src"
+                :alt="tourGallery[2].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+            <article class="h-[240px] overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:h-[285px]">
+              <NuxtImg
+                :src="tourGallery[6].src"
+                :alt="tourGallery[6].alt"
+                class="h-full w-full object-cover transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </article>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="border-t border-border bg-muted/40 py-16 md:py-24">
+    <section class="border-b border-border bg-muted/20 py-16 md:py-24">
       <div class="container mx-auto px-6 md:px-8">
-        <div class="grid gap-12 lg:grid-cols-2">
+        <div class="grid items-center gap-8 lg:grid-cols-[1fr_1.4fr]">
           <div>
-            <div class="flex items-center gap-3">
-              <Sparkles class="h-8 w-8 text-primary" aria-hidden="true" />
-              <h2 class="font-serif text-2xl text-primary md:text-3xl">
-                Подготовка к путешествию
-              </h2>
-            </div>
-            <ul class="mt-6 space-y-4" role="list">
-              <li
-                v-for="(item, idx) in preparationItems"
-                :key="idx"
-                class="flex gap-3 text-pretty leading-relaxed text-muted-foreground"
-              >
-                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                {{ item }}
-              </li>
-            </ul>
+            <h2 class="font-serif text-3xl text-primary md:text-4xl">
+              Как к нам добраться
+            </h2>
+            <p class="mt-5 max-w-xl leading-relaxed text-muted-foreground">
+              Наши квадроциклы, как и начальная точка всех маршрутов, находятся на базе отдыха «Строгановские Просторы» в Ильинском районе Пермского края. Это примерно в двух часах езды от iMall Эспланада в центре Перми.
+            </p>
           </div>
-          <div>
-            <div class="flex items-center gap-3">
-              <Wrench class="h-8 w-8 text-primary" aria-hidden="true" />
-              <h2 class="font-serif text-2xl text-primary md:text-3xl">
-                Наша техника
-              </h2>
-            </div>
-            <ul class="mt-6 space-y-4" role="list">
-              <li
-                v-for="(item, idx) in equipmentItems"
-                :key="idx"
-                class="flex gap-3 text-pretty leading-relaxed text-muted-foreground"
-              >
-                <Shield
-                  class="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                  aria-hidden="true"
-                />
-                {{ item }}
-              </li>
-            </ul>
-          </div>
+          <div style="position:relative;overflow:hidden;"><a href="https://yandex.com/maps?utm_medium=mapframe&utm_source=maps" style="color:#eee;font-size:12px;position:absolute;top:0px;">Яндекс Карты</a><a href="https://yandex.com/maps/?from=mapframe&ll=55.923443%2C58.318195&mode=routes&rtext=58.011576%2C56.227308~58.614132%2C55.722128&rtt=auto&ruri=ymapsbm1%3A%2F%2Forg%3Foid%3D117771901434~ymapsbm1%3A%2F%2Forg%3Foid%3D1277179994&source=mapframe&utm_medium=mapframe&utm_source=maps&z=8" style="color:#eee;font-size:12px;position:absolute;top:14px;">Строгановские просторы: как доехать на автомобиле, общественным транспортом или пешком – Яндекс Карты</a><iframe src="https://yandex.com/map-widget/v1/?from=mapframe&ll=55.923443%2C58.318195&mode=routes&rtext=58.011576%2C56.227308~58.614132%2C55.722128&rtt=auto&ruri=ymapsbm1%3A%2F%2Forg%3Foid%3D117771901434~ymapsbm1%3A%2F%2Forg%3Foid%3D1277179994&source=mapframe&utm_source=mapframe&z=8" width="560" height="400" frameborder="1" allowfullscreen="true" style="position:relative;"></iframe></div>
         </div>
       </div>
     </section>
 
-    <section class="border-t border-border bg-background py-14 md:py-20">
+    <section id="request" class="scroll-mt-24 bg-background py-16 md:py-24">
       <div class="container mx-auto px-6 md:px-8">
-        <div
-          class="overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 md:p-10"
-        >
-          <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary/90">
-                Готовы к старту
-              </p>
-              <h2 class="mt-3 font-serif text-2xl text-primary md:text-3xl">
-                Выберите маршрут и зафиксируйте удобную дату
-              </h2>
-              <p class="mt-4 max-w-2xl text-pretty leading-relaxed text-muted-foreground">
-                После заявки мы свяжемся с вами, поможем подобрать оптимальный
-                формат тура и дадим рекомендации по подготовке.
-              </p>
-            </div>
+        <div class="mx-auto max-w-3xl rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 text-center md:p-10">
+          <ShieldCheck class="mx-auto h-10 w-10 text-primary" aria-hidden="true" />
+          <h2 class="mt-4 font-serif text-3xl text-primary md:text-4xl">
+            Забронировать тур
+          </h2>
+          <p class="mt-4 leading-relaxed text-muted-foreground">
+            Бронирование происходит через оператора. Позвоните нам или перейдите к маршрутам и оставьте заявку на подходящий тур.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
-              href="#request"
-              class="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-8 py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+              :href="bookingTel"
+              class="inline-flex items-center justify-center rounded-full border border-primary bg-primary px-7 py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Перейти к заявке
+              {{ bookingPhone }}
+            </a>
+            <a
+              href="#tours-list"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-7 py-3 text-sm font-semibold uppercase tracking-wide text-primary transition-colors hover:border-primary/80 hover:bg-primary/5"
+            >
+              Выбрать маршрут
               <ArrowRight class="h-4 w-4" aria-hidden="true" />
             </a>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section
-      id="request"
-      class="scroll-mt-24 border-t border-border py-16 md:py-24"
-    >
-      <div class="container mx-auto max-w-lg px-6 md:px-8">
-        <h2
-          class="mb-2 text-center font-serif text-3xl text-primary md:text-4xl"
-        >
-          Оставить заявку
-        </h2>
-        <p class="mb-10 text-center text-pretty text-muted-foreground">
-          Заполните форму — мы свяжемся с вами для уточнения даты и состава
-          группы. Сейчас данные не отправляются на сервер (демо-режим).
-        </p>
-
-        <div
-          v-if="requestSent"
-          class="rounded-2xl border border-primary/20 bg-card p-8 text-center shadow-sm"
-          role="status"
-        >
-          <p class="font-medium text-primary">Заявка принята (демо)</p>
-          <p class="mt-2 text-sm text-muted-foreground">
-            Для реального бронирования позвоните нам или напишите на почту из
-            подвала сайта.
-          </p>
-          <button
-            type="button"
-            class="mt-6 text-sm font-semibold text-primary underline underline-offset-4"
-            @click="requestSent = false"
-          >
-            Отправить ещё одну
-          </button>
-        </div>
-
-        <form
-          v-else
-          class="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-10"
-          @submit="submitRequest"
-        >
-          <div class="space-y-5">
-            <div>
-              <label
-                for="tour-request-name"
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                >Имя</label
-              >
-              <input
-                id="tour-request-name"
-                v-model="requestName"
-                type="text"
-                autocomplete="name"
-                class="w-full rounded-md border border-input bg-background px-3 py-2.5 text-foreground shadow-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-                placeholder="Как к вам обращаться"
-              />
-            </div>
-            <div>
-              <label
-                for="tour-request-phone"
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                >Телефон</label
-              >
-              <input
-                id="tour-request-phone"
-                v-model="requestPhone"
-                type="tel"
-                autocomplete="tel"
-                class="w-full rounded-md border border-input bg-background px-3 py-2.5 text-foreground shadow-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-                placeholder="+7 …"
-              />
-            </div>
-            <div>
-              <label
-                for="tour-request-tour"
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                >Маршрут</label
-              >
-              <select
-                id="tour-request-tour"
-                v-model="requestTourId"
-                class="w-full rounded-md border border-input bg-background px-3 py-2.5 text-foreground shadow-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-              >
-                <option
-                  v-for="opt in tourOptions"
-                  :key="String(opt.value)"
-                  :value="opt.value"
-                >
-                  {{ opt.label }}
-                </option>
-              </select>
-            </div>
-            <div>
-              <label
-                for="tour-request-msg"
-                class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-                >Комментарий</label
-              >
-              <textarea
-                id="tour-request-msg"
-                v-model="requestMessage"
-                rows="4"
-                class="w-full rounded-md border border-input bg-background px-3 py-2.5 text-foreground shadow-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-                placeholder="Дата, количество человек, пожелания"
-              />
-            </div>
-            <button
-              type="submit"
-              class="w-full rounded-full border border-primary bg-primary py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Отправить заявку
-            </button>
-          </div>
-        </form>
       </div>
     </section>
 
