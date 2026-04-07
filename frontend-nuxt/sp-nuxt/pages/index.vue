@@ -7,67 +7,114 @@ const {
   isEditMode,
   pending: adminStatusPending,
   toggleEditMode,
-} = useAdminEditMode()
+} = useAdminEditMode();
 
-const { data: siteSettings } = useSiteSettings()
-const siteIsActive = computed(() => siteSettings.value?.site_active !== false)
+const { data: siteSettings } = useSiteSettings();
+const siteIsActive = computed(() => siteSettings.value?.site_active !== false);
 
-const config = useRuntimeConfig()
-const siteUrl = config.public.siteUrl
-const apiBase = config.public.apiBase
+const config = useRuntimeConfig();
+const siteUrl = config.public.siteUrl;
+const apiBase = config.public.apiBase;
 
 useHead({
   link: [
-    { rel: 'preconnect', href: apiBase },
-    { rel: 'dns-prefetch', href: apiBase },
+    { rel: "preconnect", href: apiBase },
+    { rel: "dns-prefetch", href: apiBase },
   ],
-})
+});
 
 useHead({
-  title: 'Строгановские Просторы - Коттеджи и глэмпинг',
+  title: "Строгановские Просторы - Коттеджи и глэмпинг",
   meta: [
     {
-      name: 'description',
-      content: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
+      name: "description",
+      content:
+        "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
     },
   ],
-  link: [
-    { rel: 'canonical', href: siteUrl },
+  link: [{ rel: "canonical", href: siteUrl }],
+  script: [
+    {
+      src: "https://widget.bronirui-online.ru/js/app.js",
+      type: "text/javascript",
+      tagPosition: "bodyClose",
+    },
   ],
-})
+});
 
 useSeoMeta({
-  title: 'Строгановские Просторы - Коттеджи и глэмпинг',
-  description: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
-  ogTitle: 'Строгановские Просторы',
-  ogDescription: 'Уютные коттеджи и глэмпинг на берегу камского моря',
+  title: "Строгановские Просторы - Коттеджи и глэмпинг",
+  description:
+    "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
+  ogTitle: "Строгановские Просторы",
+  ogDescription: "Уютные коттеджи и глэмпинг на берегу камского моря",
   ogImage: `${siteUrl}/images/hero-cottages.jpg`,
   ogUrl: siteUrl,
-  ogType: 'website',
-  ogLocale: 'ru_RU',
-  twitterCard: 'summary_large_image',
-  twitterTitle: 'Строгановские Просторы',
-  twitterDescription: 'Уютные коттеджи и глэмпинг на берегу камского моря',
+  ogType: "website",
+  ogLocale: "ru_RU",
+  twitterCard: "summary_large_image",
+  twitterTitle: "Строгановские Просторы",
+  twitterDescription: "Уютные коттеджи и глэмпинг на берегу камского моря",
   twitterImage: `${siteUrl}/images/hero-cottages.jpg`,
-})
+});
 
 useStructuredData({
-  '@context': 'https://schema.org',
-  '@type': 'TouristAttraction',
-  name: 'Строгановские Просторы',
-  description: 'Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.',
+  "@context": "https://schema.org",
+  "@type": "TouristAttraction",
+  name: "Строгановские Просторы",
+  description:
+    "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
   url: siteUrl,
   image: `${siteUrl}/images/hero-cottages.jpg`,
   address: {
-    '@type': 'PostalAddress',
-    addressCountry: 'RU',
-    addressRegion: 'Пермский край',
+    "@type": "PostalAddress",
+    addressCountry: "RU",
+    addressRegion: "Пермский край",
   },
   offers: {
-    '@type': 'Offer',
-    priceCurrency: 'RUB',
+    "@type": "Offer",
+    priceCurrency: "RUB",
   },
-})
+});
+
+const znmsWidgetOptions = {
+  moduleId: 6826,
+  index: 0,
+  widget: {
+    zindex: 2000,
+    position: {
+      top: "100px",
+    },
+    mobile: {
+      absolute: false,
+      color: undefined,
+      position: {
+        top: "100px",
+      },
+    },
+  },
+  button: {
+    position: {
+      bottom: "50px",
+      left: "50px",
+      right: "50px",
+    },
+  },
+};
+
+onMounted(() => {
+  let n = 0;
+  const t = setInterval(() => {
+    n += 1;
+    const w = typeof window !== "undefined" ? window.znmsWidget : null;
+    if (w?.init) {
+      clearInterval(t);
+      w.init("#znms-widget-1", znmsWidgetOptions);
+    } else if (n >= 300) {
+      clearInterval(t);
+    }
+  }, 50);
+});
 </script>
 
 <template>
@@ -89,12 +136,18 @@ useStructuredData({
         :disabled="adminStatusPending"
         @click="toggleEditMode"
       >
-        {{ isEditMode ? "Режим редактирования: ВКЛ" : "Режим редактирования: ВЫКЛ" }}
+        {{
+          isEditMode
+            ? "Режим редактирования: ВКЛ"
+            : "Режим редактирования: ВЫКЛ"
+        }}
       </button>
     </div>
 
     <!-- Критичные компоненты для первого рендера - загружаются сразу -->
     <HeroSection :edit-mode="isEditMode" :hide-navigation="!siteIsActive" />
+
+    <div v-if="siteIsActive" id="znms-widget-1" />
 
     <template v-if="siteIsActive">
       <ClientOnly>
@@ -128,4 +181,3 @@ useStructuredData({
     <FooterSection />
   </div>
 </template>
-

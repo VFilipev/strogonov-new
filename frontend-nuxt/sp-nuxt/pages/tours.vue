@@ -1,6 +1,11 @@
 <script setup>
 import { ArrowRight, Clock3, Gauge, MapPinned, ShieldCheck, Users } from "lucide-vue-next";
 import ToursHero from "~/components/sections/ToursHero.vue";
+
+import tourCardImage1 from "~/assets/resort/tour1.jpeg";
+import tourCardImage2 from "~/assets/resort/tour2.jpeg";
+import tourCardImage3 from "~/assets/resort/tour3.jpg";
+import tourCardImage4 from "~/assets/resort/tour4.jpeg";
 import tourCardImage from "~/assets/resort/123.webp";
 import galleryHero from "~/assets/tours/hero.webp";
 import galleryHero6 from "~/assets/tours/hero6.webp";
@@ -22,36 +27,40 @@ const formatRub = (value) => `${new Intl.NumberFormat("ru-RU").format(value)} р
 
 const quadTours = [
   {
-    id: "rassvet",
-    title: "Рассвет",
-    duration: "210 минут",
-    group: "до 5 квадроциклов",
+    id: "oznakomitelnyy",
+    title: "Ознакомительный",
+    duration: "60 минут",
+    group: "от 3 квадроциклов",
     difficulty: "легкая",
-    price: 15000,
+    price: 5000,
+    photo: tourCardImage1,
   },
   {
-    id: "bolotnyy-dozor",
-    title: "Болотный дозор",
-    duration: "380 минут",
-    group: "до 8 квадроциклов",
+    id: "bobrovaya-plitina",
+    title: "Бобровая плотина",
+    duration: "2,5 - 3 часа",
+    group: "от 3 квадроциклов",
     difficulty: "средняя",
-    price: 22500,
+    price: 14000,
+    photo: tourCardImage2,
   },
   {
-    id: "gryazevoy-apokalipsis",
-    title: "Грязевой апокалипсис",
-    duration: "130 минут",
-    group: "до 4 квадроциклов",
-    difficulty: "экстрим",
+    id: "pchelodey",
+    title: "Пчеловод",
+    duration: "3 - 4 часа",
+    group: "от 4 квадроциклов",
+    difficulty: "средняя",
     price: 17000,
+    photo: tourCardImage3,
   },
   {
     id: "vedmin-krug",
-    title: "Ведьмин круг",
-    duration: "22 часа",
-    group: "до 12 квадроциклов",
+    title: "Чермоз",
+    duration: "10 часов",
+    group: "от 4 квадроциклов",
     difficulty: "тяжелая",
-    price: 55000,
+    price: 35000,
+    photo: tourCardImage4,
   },
 ];
 
@@ -115,24 +124,24 @@ useHead({
     <section id="tours-list" class="scroll-mt-24 border-b border-border bg-background py-16 md:py-24">
       <div class="container mx-auto px-6 md:px-8">
         <h2 class="font-serif text-3xl text-primary md:text-4xl">
-          Наши квадротуры
+          Маршруты
         </h2>
 
         <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           <article
             v-for="tour in quadTours"
             :key="tour.id"
-            class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300"
           >
             <div class="relative min-h-[170px] overflow-hidden bg-primary/95 px-5 py-6 text-primary-foreground">
               <NuxtImg
-                :src="tourCardImage"
+                :src="tour.photo"
                 alt=""
-                class="absolute inset-0 h-full w-full object-cover opacity-85"
+                class="absolute inset-0 h-full w-full object-cover opacity-95"
                 loading="lazy"
                 decoding="async"
               />
-              <div class="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/55" />
+              <div class="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/35" />
               <h3 class="relative mt-auto font-serif text-2xl text-primary-foreground">
                 {{ tour.title }}
               </h3>

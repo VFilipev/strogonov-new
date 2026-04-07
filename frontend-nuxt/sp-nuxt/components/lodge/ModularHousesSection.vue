@@ -35,7 +35,7 @@ const {
 </script>
 
 <template>
-  <section class="house_typ h-[90vh] box-border pt-[52px]" data-section="modular">
+  <section class="house_typ h-[100vh] box-border pt-[52px]" data-section="modular">
     <div class="container">
       <div class="row">
         <div class="col-12 col-sm-6">
@@ -65,137 +65,136 @@ const {
       </div>
 
       <div class="card_house__wrapper">
-        <div v-for="(house, index) in houses" :key="house.id">
-          <Transition name="fade" mode="out-in">
-            <div v-show="selectHouseIndex === index" class="card_house">
-              <div class="row">
-                <!-- Информация слева (перевернуто) -->
-                <div class="col-12 col-sm-6">
-                  <div class="row d-none d-sm-flex" style="margin-bottom: 64px">
-                    <div class="col-12">
-                      <div class="house__name_description">Стоимость</div>
-                      <div
-                        v-for="(cost, costIndex) in house.price_set"
-                        :key="costIndex"
-                        class="row_cost"
-                      >
-                        <div class="house__text_description">{{ cost.name }}</div>
-                        <div class="house__text_description">
-                          {{ formatNumber(cost.cost) + ' р.' }}
-                        </div>
-                      </div>
-                      <div
-                        v-for="(cost, costIndex) in house.special_price_set"
-                        :key="`special-${costIndex}`"
-                        class="row_cost"
-                      >
-                        <div class="house__text_description">{{ cost.name }}</div>
-                        <div class="house__text_description">
-                          {{ formatNumber(cost.cost) + ' р.' }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row" style="margin-bottom: 31px">
-                    <div class="col-6">
-                      <div class="house__name_description">Описание</div>
-                      <div class="house__text_description">{{ house.description }}</div>
-                    </div>
-                    <div class="col-6">
-                      <div class="house__name_description">Доступность</div>
+        <Transition name="fade" mode="out-in">
+          <div v-if="selectedHouse" :key="selectedHouse.id" class="card_house">
+            <div class="row">
+              <div class="col-12 col-sm-6">
+                <div class="row d-none d-sm-flex" style="margin-bottom: 64px">
+                  <div class="col-12">
+                    <div class="house__name_description">Стоимость</div>
+                    <div
+                      v-for="(cost, costIndex) in selectedHouse.price_set"
+                      :key="costIndex"
+                      class="row_cost"
+                    >
+                      <div class="house__text_description">{{ cost.name }}</div>
                       <div class="house__text_description">
-                        <p
-                          v-for="(availability, availIndex) in house.availability_set"
-                          :key="availIndex"
-                        >
-                          {{ availability.name }}
-                        </p>
+                        {{ formatNumber(cost.cost) + ' р.' }}
                       </div>
                     </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-6">
-                      <div class="house__name_description">Удобства</div>
-                      <div class="house__text_description">{{ house.conveniences }}</div>
-                    </div>
-                    <div class="col-6">
-                      <div class="house__name_description">Включено в проживание</div>
-                      <div class="house__text_description">{{ house.include }}</div>
-                    </div>
-                  </div>
-
-                  <div class="row" style="margin-top: 31px">
-                    <div class="col-6">
-                      <a
-                        v-if="house.bronirui_online_url"
-                        :href="house.bronirui_online_url"
-                        class="toBooking"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        забронировать
-                      </a>
-                      <button
-                        v-else
-                        type="button"
-                        class="toBooking toBooking--disabled"
-                        disabled
-                      >
-                        забронировать
-                      </button>
+                    <div
+                      v-for="(cost, costIndex) in selectedHouse.special_price_set"
+                      :key="`special-${costIndex}`"
+                      class="row_cost"
+                    >
+                      <div class="house__text_description">{{ cost.name }}</div>
+                      <div class="house__text_description">
+                        {{ formatNumber(cost.cost) + ' р.' }}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Фотографии справа (перевернуто) -->
-                <div class="col-12 col-sm-6">
-                  <div class="row">
-                    <div class="col-12">
-                      <div
-                        class="house__image"
-                        :style="{ backgroundImage: `url(${house.img})` }"
-                        @click="openPhotoViewer(house, 0)"
+                <div class="row" style="margin-bottom: 31px">
+                  <div class="col-6">
+                    <div class="house__name_description">Описание</div>
+                    <div class="house__text_description">{{ selectedHouse.description }}</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="house__name_description">Доступность</div>
+                    <div class="house__text_description">
+                      <p
+                        v-for="(availability, availIndex) in selectedHouse.availability_set"
+                        :key="availIndex"
                       >
-                        <span
-                          v-if="house?.photo_gallery_set?.length"
-                          class="house__image_hint"
-                        >
-                          Нажмите на фото, чтобы открыть галерею
-                        </span>
-                      </div>
+                        {{ availability.name }}
+                      </p>
                     </div>
                   </div>
-                  <div class="row row_swiper">
-                    <div class="col-12 swiper__wrapper" style="position: relative">
-                      <Swiper
-                        class="house-swiper"
-                        :slides-per-view="2"
-                        :space-between="16"
-                        :breakpoints="swiperBreakpoints"
+                </div>
+
+                <div class="row">
+                  <div class="col-6">
+                    <div class="house__name_description">Удобства</div>
+                    <div class="house__text_description">{{ selectedHouse.conveniences }}</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="house__name_description">Включено в проживание</div>
+                    <div class="house__text_description">{{ selectedHouse.include }}</div>
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top: 31px">
+                  <div class="col-6">
+                    <a
+                      v-if="selectedHouse.bronirui_online_url"
+                      :href="selectedHouse.bronirui_online_url"
+                      class="toBooking"
+                    >
+                      забронировать
+                    </a>
+                    <button
+                      v-else
+                      type="button"
+                      class="toBooking toBooking--disabled"
+                      disabled
+                    >
+                      забронировать
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="row">
+                  <div class="col-12">
+                    <div
+                      class="house__image"
+                      :style="{ backgroundImage: `url(${selectedHouse.img})` }"
+                      @click="openPhotoViewer(selectedHouse, 0)"
+                    >
+                      <span
+                        v-if="selectedHouse?.photo_gallery_set?.length"
+                        class="house__image_hint"
                       >
-                        <SwiperSlide
-                          v-for="(card, cardIndex) in house.photo_gallery_set"
-                          :key="cardIndex"
-                        >
-                          <div class="photogalery__card">
-                            <div
-                              class="photogalery__image"
-                              :style="{ backgroundImage: `url(${card.img})` }"
-                              @click="openPhotoViewer(house, cardIndex + (house.img ? 1 : 0))"
-                            ></div>
-                            <div class="photogalery__name">{{ card.name }}</div>
-                          </div>
-                        </SwiperSlide>
-                      </Swiper>
+                        Нажмите на фото, чтобы открыть галерею
+                      </span>
                     </div>
+                  </div>
+                </div>
+                <div class="row row_swiper">
+                  <div class="col-12 swiper__wrapper" style="position: relative">
+                    <Swiper
+                      class="house-swiper"
+                      :slides-per-view="2"
+                      :space-between="16"
+                      :breakpoints="swiperBreakpoints"
+                    >
+                      <SwiperSlide
+                        v-for="(card, cardIndex) in selectedHouse.photo_gallery_set"
+                        :key="cardIndex"
+                      >
+                        <div class="photogalery__card">
+                          <div
+                            class="photogalery__image"
+                            :style="{ backgroundImage: `url(${card.img})` }"
+                            @click="
+                              openPhotoViewer(
+                                selectedHouse,
+                                cardIndex + (selectedHouse.img ? 1 : 0)
+                              )
+                            "
+                          ></div>
+                          <div class="photogalery__name">{{ card.name }}</div>
+                        </div>
+                      </SwiperSlide>
+                    </Swiper>
                   </div>
                 </div>
               </div>
             </div>
-          </Transition>
-        </div>
+          </div>
+        </Transition>
       </div>
     </div>
 
@@ -260,7 +259,7 @@ const {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 1.2s ease-out;
+  transition: opacity 0.6s ease-out;
 }
 
 .circle-left {

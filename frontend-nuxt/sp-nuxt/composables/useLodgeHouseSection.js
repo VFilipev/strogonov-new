@@ -10,13 +10,13 @@ export function useLodgeHouseSection(props) {
 
   const getAllHouseImages = (house) => {
     const images = [];
-    if (house.img) {
-      images.push(house.img);
+    if (house.viewerImg || house.img) {
+      images.push(house.viewerImg || house.img);
     }
     if (house.photo_gallery_set?.length) {
       house.photo_gallery_set.forEach((photo) => {
-        if (photo.img) {
-          images.push(photo.img);
+        if (photo.viewerImg || photo.img) {
+          images.push(photo.viewerImg || photo.img);
         }
       });
     }

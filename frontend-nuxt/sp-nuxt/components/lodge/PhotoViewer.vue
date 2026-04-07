@@ -166,6 +166,7 @@ onUnmounted(() => {
   max-width: 1400px;
   height: 100%;
   max-height: 90vh;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,6 +175,16 @@ onUnmounted(() => {
 .photo-viewer__swiper {
   width: 100%;
   height: 100%;
+  min-height: 0;
+}
+
+:global(.photo-viewer__swiper .swiper-wrapper) {
+  height: 100%;
+}
+
+:global(.photo-viewer__swiper .swiper-slide) {
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .photo-viewer__slide {
@@ -181,20 +192,29 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .photo-viewer__image-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 0;
 }
 
 .photo-viewer__image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  object-position: center;
   border-radius: 8px;
   user-select: none;
 }

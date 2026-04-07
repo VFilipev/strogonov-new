@@ -180,8 +180,6 @@ const {
                       v-if="selectedHouse.bronirui_online_url"
                       :href="selectedHouse.bronirui_online_url"
                       class="toBooking"
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       забронировать
                     </a>

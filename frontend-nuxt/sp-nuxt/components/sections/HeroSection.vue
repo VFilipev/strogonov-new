@@ -65,6 +65,61 @@ const heroPlaceholder = computed(() => {
   }
 });
 
+const heroVideoSrc = computed(() => heroData.value?.promo_video_url || "");
+
+const showHeroVideo = computed(() => {
+  if (localHeroPreviewUrl.value) return false;
+  if (heroData.value?.display_type !== "video") return false;
+  return Boolean(heroVideoSrc.value);
+});
+
+const heroVideoPoster = computed(() => {
+  const h = heroData.value;
+  if (h?.video_poster_url) return h.video_poster_url;
+  if (heroPlaceholder.value) return heroPlaceholder.value;
+  return heroImageSrc.value || undefined;
+});
+
+const videoPlaybackAllowed = ref(true);
+const heroVideoRef = ref(null);
+const heroVideoLoaded = ref(false);
+const heroVideoPlaying = ref(false);
+const heroVideoError = ref(false);
+
+const shouldAutoplayHeroVideo = computed(() =>
+  videoPlaybackAllowed.value && heroData.value?.autoplay_video !== false
+);
+
+const heroVideoMimeType = computed(() => {
+  const src = heroVideoSrc.value.toLowerCase();
+  if (src.endsWith(".webm")) return "video/webm";
+  if (src.endsWith(".mp4")) return "video/mp4";
+  return undefined;
+});
+
+const showHeroPosterOverlay = computed(() => {
+  if (!showHeroVideo.value) return false;
+  if (heroVideoError.value) return true;
+  return !(heroVideoLoaded.value && heroVideoPlaying.value);
+});
+
+const heroVideoPosterStyle = computed(() => {
+  if (!heroVideoPoster.value) return {};
+  return { backgroundImage: `url("${heroVideoPoster.value}")` };
+});
+
+const heroBackgroundStyle = computed(() => {
+  const src = heroImageSrc.value;
+  if (!src) return {};
+
+  const placeholder = heroPlaceholder.value;
+  const backgroundImage = placeholder ? `url("${placeholder}"), url("${src}")` : `url("${src}")`;
+
+  return {
+    backgroundImage,
+  };
+});
+
 useHead(() => ({
   link: [
     {
@@ -77,11 +132,18 @@ useHead(() => ({
       as: "image",
       href: nac,
     },
+    ...(heroVideoPoster.value
+      ? [{ rel: "preload", as: "image", href: heroVideoPoster.value }]
+      : []),
+    ...(showHeroVideo.value && heroVideoSrc.value
+      ? [{ rel: "preload", as: "video", href: heroVideoSrc.value }]
+      : []),
   ],
 }));
 
 const parallaxLayerRef = ref(null);
 const parallaxEnabled = ref(false);
+const safariParallaxBlocked = ref(false);
 const editableTitle = ref("");
 const editableSubtitle = ref("");
 const editableHeroFile = ref(null);
@@ -171,7 +233,7 @@ const applyParallaxTransform = () => {
   const el = parallaxLayerRef.value;
   if (!el) return;
   if (!parallaxEnabled.value) {
-    el.style.transform = "translate3d(0, 0, 0) scale(1.05)";
+    el.style.transform = "";
     el.style.willChange = "auto";
     return;
   }
@@ -213,15 +275,89 @@ watch(mobileMenuOpen, (isOpen) => {
   document.body.style.overflow = isOpen ? "hidden" : "";
 });
 
+watch(
+  [showHeroVideo, heroVideoSrc],
+  async ([isVideo]) => {
+    heroVideoLoaded.value = false;
+    heroVideoPlaying.value = false;
+    heroVideoError.value = false;
+    if (!isVideo || !import.meta.client) return;
+    await nextTick();
+    const video = heroVideoRef.value;
+    if (!video) return;
+    video.load();
+  },
+  { immediate: true }
+);
+
+watch(shouldAutoplayHeroVideo, async (shouldAutoplay) => {
+  if (!showHeroVideo.value || !import.meta.client) return;
+  await nextTick();
+  const video = heroVideoRef.value;
+  if (!video) return;
+  if (!shouldAutoplay) {
+    video.pause();
+    heroVideoPlaying.value = false;
+    return;
+  }
+  if (heroVideoLoaded.value) {
+    try {
+      await video.play();
+    } catch {
+      heroVideoPlaying.value = false;
+    }
+  }
+});
+
+const playHeroVideo = async () => {
+  if (!shouldAutoplayHeroVideo.value) return;
+  const video = heroVideoRef.value;
+  if (!video) return;
+  try {
+    await video.play();
+  } catch {
+    heroVideoPlaying.value = false;
+  }
+};
+
+const handleHeroVideoLoadedData = async () => {
+  heroVideoLoaded.value = true;
+  await playHeroVideo();
+};
+
+const handleHeroVideoPlaying = () => {
+  heroVideoPlaying.value = true;
+};
+
+const handleHeroVideoPause = () => {
+  if (!shouldAutoplayHeroVideo.value) {
+    heroVideoPlaying.value = false;
+  }
+};
+
+const handleHeroVideoError = () => {
+  heroVideoError.value = true;
+  heroVideoLoaded.value = false;
+  heroVideoPlaying.value = false;
+};
+
 onMounted(async () => {
   if (!import.meta.client) return;
+
+  const ua = navigator.userAgent || "";
+  const isSafari =
+    /AppleWebKit/i.test(ua) &&
+    /Safari/i.test(ua) &&
+    !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS|EdgiOS)/i.test(ua);
 
   const prefersReducedMotion = window.matchMedia?.(
     "(prefers-reduced-motion: reduce)"
   ).matches;
   const isDesktop = window.matchMedia?.("(min-width: 768px)").matches;
 
-  parallaxEnabled.value = !prefersReducedMotion && isDesktop;
+  safariParallaxBlocked.value = isSafari;
+  parallaxEnabled.value = !prefersReducedMotion && isDesktop && !isSafari;
+  videoPlaybackAllowed.value = !prefersReducedMotion;
 
   await nextTick();
   if (parallaxEnabled.value) {
@@ -233,6 +369,10 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   closeMobileMenu();
+  const video = heroVideoRef.value;
+  if (video) {
+    video.pause();
+  }
   if (import.meta.client) {
     document.body.style.overflow = "";
     window.removeEventListener("keydown", handleWindowKeydown);
@@ -249,38 +389,44 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section
-    class="relative flex min-h-screen items-center justify-center overflow-hidden"
-  >
+  <section class="hero-section relative flex items-center justify-center overflow-hidden">
 
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div
         ref="parallaxLayerRef"
-        class="absolute inset-0 [backface-visibility:hidden]"
+        class="hero-parallax-layer absolute inset-0"
       >
-        <img
-          v-if="localHeroPreviewUrl"
-          :src="heroImageSrc"
-          alt="Коттеджи базы отдыха Строгановские Просторы зимой"
-          width="1410"
-          height="940"
-          class="h-full w-full object-cover [backface-visibility:hidden]"
+        <video
+          v-if="showHeroVideo"
+          ref="heroVideoRef"
+          class="hero-video absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          :class="heroVideoPlaying ? 'opacity-100' : 'opacity-0'"
+          :poster="heroVideoPoster"
+          playsinline
+          preload="auto"
+          :autoplay="shouldAutoplayHeroVideo"
+          :loop="heroData?.loop_video !== false"
+          :muted="heroData?.mute_video !== false"
+          @loadeddata="handleHeroVideoLoadedData"
+          @playing="handleHeroVideoPlaying"
+          @pause="handleHeroVideoPause"
+          @error="handleHeroVideoError"
+          aria-hidden="true"
+        >
+          <source :src="heroVideoSrc" :type="heroVideoMimeType" />
+        </video>
+        <div
+          v-if="showHeroPosterOverlay && heroVideoPoster"
+          class="hero-bg absolute inset-0 transition-opacity duration-500"
+          :class="heroVideoPlaying ? 'opacity-0' : 'opacity-100'"
+          :style="heroVideoPosterStyle"
+          aria-hidden="true"
         />
-        <NuxtImg
-          v-else-if="heroImageSrc"
-          :src="heroImageSrc"
-          alt="Коттеджи базы отдыха Строгановские Просторы зимой"
-          :width="1410"
-          :height="940"
-          :quality="80"
-          class="h-full w-full object-cover [backface-visibility:hidden]"
-          loading="eager"
-          decoding="async"
-          fetchpriority="high"
-          sizes="100vw"
-          :preload="true"
-          format="webp"
-          :placeholder="heroPlaceholder"
+        <div
+          v-if="!showHeroVideo && heroImageSrc"
+          class="hero-bg absolute inset-0"
+          :style="heroBackgroundStyle"
+          aria-hidden="true"
         />
       </div>
       <div
@@ -542,3 +688,32 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
+
+<style scoped>
+.hero-section {
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+}
+
+.hero-parallax-layer {
+  height: 100%;
+  width: 100%;
+}
+
+.hero-bg {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .hero-section {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+}
+</style>
