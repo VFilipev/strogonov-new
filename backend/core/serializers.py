@@ -10,7 +10,7 @@ from .models import (
     GuestFeedback,
     AfishaEvent,
 )
-from .utils import get_image_url, format_afisha_date_label
+from .utils import get_image_url, format_afisha_event_date_label
 from .serializer_mixins import ImageVariantsMixin
 
 
@@ -497,7 +497,7 @@ class AfishaEventSerializer(serializers.ModelSerializer):
 
     sortKey = serializers.SerializerMethodField()
     dateLabel = serializers.SerializerMethodField()
-    shortDescription = serializers.CharField(source='description')
+    shortDescription = serializers.SerializerMethodField()
     fullDescription = serializers.CharField(source='description')
     pricePerGuest = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
@@ -516,10 +516,19 @@ class AfishaEventSerializer(serializers.ModelSerializer):
         ]
 
     def get_sortKey(self, obj):
-        return obj.event_date.isoformat()
+        d = obj.event_date or obj.event_date_end
+        if d is None:
+            return None
+        return d.isoformat()
+
+    def get_shortDescription(self, obj):
+        text = (obj.short_description or '').strip()
+        if text:
+            return text
+        return obj.description or ''
 
     def get_dateLabel(self, obj):
-        return format_afisha_date_label(obj.event_date)
+        return format_afisha_event_date_label(obj.event_date, obj.event_date_end)
 
     def get_pricePerGuest(self, obj):
         if obj.price_per_guest is None:

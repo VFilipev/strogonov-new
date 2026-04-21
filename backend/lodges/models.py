@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.urls import reverse
 from imagekit.models import ImageSpecField
@@ -99,6 +100,14 @@ class Lodge(SEOMixin):
         on_delete=models.CASCADE,
         related_name='lodges',
         verbose_name='Тип размещения'
+    )
+    category = models.ForeignKey(
+        'LodgeCategory',
+        on_delete=models.SET_NULL,
+        related_name='lodges',
+        blank=True,
+        null=True,
+        verbose_name='Категория размещения'
     )
     name = models.CharField(
         max_length=255,
@@ -299,6 +308,70 @@ class LodgeImage(models.Model):
 
     def __str__(self):
         return f'{self.lodge.name} - Изображение {self.order}'
+
+
+class LodgeCategory(models.Model):
+    lodge_type = models.ForeignKey(
+        LodgeType,
+        on_delete=models.CASCADE,
+        related_name='categories',
+        verbose_name='Тип размещения'
+    )
+    name = models.CharField(
+        max_length=255,
+        verbose_name='Название',
+        help_text='Название категории (например: На воде)'
+    )
+    slug = models.SlugField(
+        max_length=255,
+        verbose_name='URL-адрес',
+        help_text='Уникальный URL-адрес категории в рамках типа размещения'
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Описание'
+    )
+    image = models.ImageField(
+        upload_to='lodges/categories/',
+        blank=True,
+        null=True,
+        verbose_name='Фотография'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name='Активна'
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Порядок сортировки'
+    )
+
+    class Meta:
+        verbose_name = 'Категория размещения'
+        verbose_name_plural = 'Категории размещения'
+        ordering = ['order', 'name']
+        constraints = [
+            models.UniqueConstraint(fields=['lodge_type', 'slug'], name='unique_lodge_category_slug_per_type')
+        ]
+
+    def __str__(self):
+        return f'{self.lodge_type.name} - {self.name}'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_capacity_max(self):
+        if hasattr(self, 'capacity_max') and self.capacity_max is not None:
+            return self.capacity_max
+        return self.lodges.filter(is_active=True).aggregate(value=Max('capacity'))['value'] or 0
+
+    def get_price_from_min(self):
+        if hasattr(self, 'price_from_min'):
+            return self.price_from_min
+        return self.lodges.filter(is_active=True).aggregate(value=Min('price_from'))['value']
 
 
 class LodgePrice(models.Model):

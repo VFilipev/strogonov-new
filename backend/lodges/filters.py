@@ -11,5 +11,5 @@ class LodgeFilter(filters.FilterSet):
 
     class Meta:
         model = Lodge
-        fields = ['lodge_type', 'is_active', 'price_from_min', 'price_from_max', 'capacity_min', 'capacity_max']
+        fields = ['lodge_type', 'category', 'is_active', 'price_from_min', 'price_from_max', 'capacity_min', 'capacity_max']
 

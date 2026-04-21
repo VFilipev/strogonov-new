@@ -163,10 +163,10 @@ class AfishaEventAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('category', 'title', 'event_date', 'is_active'),
+            'fields': ('category', 'title', 'event_date', 'event_date_end', 'is_active'),
         }),
         ('Описание', {
-            'fields': ('description',),
+            'fields': ( 'short_description','description',),
         }),
         ('Цена', {
             'fields': ('price_per_guest',),

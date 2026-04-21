@@ -152,7 +152,7 @@ class SiteSettings(SingletonModel, SEOMixin):
         null=True,
         verbose_name='Главное изображение'
     )
-                                      
+
     hero_image_full_webp = ImageSpecField(
         source='hero_image',
         processors=[SmartCropProcessor(1920, 1080)],
@@ -188,7 +188,7 @@ class SiteSettings(SingletonModel, SEOMixin):
         null=True,
         verbose_name='Изображение плана базы'
     )
-                                           
+
     plan_full_webp = ImageSpecField(
         source='base_plan_image',
         processors=[ResizeToFill(1388, 972)],
@@ -282,7 +282,7 @@ class GalleryImage(models.Model):
         format='WEBP',
         options={'quality': 85}
     )
-                                                     
+
     gallery_large_webp = ImageSpecField(
         source='image',
         processors=[ResizeToFill(1410, 940)],
@@ -388,7 +388,7 @@ class HeroSection(SEOMixin):
         format='WEBP',
         options={'quality': 85}
     )
-                                               
+
     preview_image_hero_full_webp = ImageSpecField(
         source='preview_image',
         processors=[SmartCropProcessor(1920, 1080)],
@@ -464,7 +464,7 @@ class HeroSection(SEOMixin):
     def clean(self):
         """Валидация Singleton - только одна активная запись"""
         if self.is_active:
-                                                            
+
             other_active = HeroSection.objects.filter(is_active=True).exclude(pk=self.pk)
             if other_active.exists():
                 raise ValidationError(
@@ -504,7 +504,7 @@ class HeroImage(models.Model):
         format='WEBP',
         options={'quality': 85}
     )
-                                                  
+
     hero_full_webp = ImageSpecField(
         source='image',
         processors=[SmartCropProcessor(1920, 1080)],
@@ -608,7 +608,9 @@ class AfishaEvent(models.Model):
     )
     title = models.CharField(max_length=255, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
-    event_date = models.DateField(verbose_name='Дата события')
+    short_description = models.TextField(verbose_name='Краткое описание', null=True)
+    event_date = models.DateField(verbose_name='Дата события', null=True, blank=True)
+    event_date_end = models.DateField(verbose_name='Дата окончания события', null=True, blank=True)
     price_per_guest = models.DecimalField(
         max_digits=12,
         decimal_places=2,

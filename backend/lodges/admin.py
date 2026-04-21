@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import LodgeType, Lodge, LodgeImage, LodgePrice, LodgeAvailability
+from .models import LodgeType, Lodge, LodgeImage, LodgePrice, LodgeAvailability, LodgeCategory
 
 
 class LodgeImageInline(admin.TabularInline):
@@ -54,7 +54,7 @@ class LodgeTypeAdmin(admin.ModelAdmin):
 @admin.register(Lodge)
 class LodgeAdmin(admin.ModelAdmin):
     list_display = ['name', 'lodge_type', 'capacity', 'area', 'price_from', 'is_active', 'order']
-    list_filter = ['lodge_type', 'is_active']
+    list_filter = ['lodge_type', 'category', 'is_active']
     search_fields = ['name', 'description', 'short_description', 'location_description']
     prepopulated_fields = {'slug': ('name',)}
     inlines = [LodgeImageInline, LodgePriceInline, LodgeAvailabilityInline]
@@ -62,7 +62,7 @@ class LodgeAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('lodge_type', 'name', 'slug', 'description', 'short_description', 'is_active', 'order')
+            'fields': ('lodge_type', 'category', 'name', 'slug', 'description', 'short_description', 'is_active', 'order')
         }),
         ('Характеристики', {
             'fields': ('capacity', 'area', 'price_from', 'location_description')
@@ -109,3 +109,20 @@ class LodgeAvailabilityAdmin(admin.ModelAdmin):
     list_filter = ['lodge']
     search_fields = ['lodge__name', 'name']
     ordering = ['lodge', 'order']
+
+
+@admin.register(LodgeCategory)
+class LodgeCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'lodge_type', 'capacity_max_display', 'price_from_min_display', 'is_active', 'order']
+    list_filter = ['lodge_type', 'is_active']
+    search_fields = ['name', 'description', 'lodge_type__name']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['lodge_type', 'order', 'name']
+
+    @admin.display(description='Макс. гостей')
+    def capacity_max_display(self, obj):
+        return obj.get_capacity_max()
+
+    @admin.display(description='Цена от')
+    def price_from_min_display(self, obj):
+        return obj.get_price_from_min()
