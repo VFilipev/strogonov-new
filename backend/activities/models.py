@@ -74,6 +74,13 @@ class Activity(SEOMixin):
         default=0,
         verbose_name='Порядок сортировки'
     )
+    page_path = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name='Ссылка на страницу',
+        help_text='путь вида /sauna',
+    )
 
     class Meta:
         verbose_name = 'Активность'

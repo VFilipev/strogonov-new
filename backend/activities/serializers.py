@@ -15,7 +15,7 @@ class ActivitySerializer(serializers.ModelSerializer):
         model = Activity
         fields = [
             'id', 'category', 'category_display', 'season', 'season_display',
-            'title', 'slug', 'description', 'image_url', 'image_webp_url',
+            'title', 'slug', 'description', 'page_path', 'image_url', 'image_webp_url',
             'video_url', 'is_active', 'order', 'seo_fields'
         ]
 

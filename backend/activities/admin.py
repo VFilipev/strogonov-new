@@ -12,7 +12,7 @@ class ActivityAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('category', 'season', 'title', 'slug', 'description', 'is_active', 'order')
+            'fields': ('category', 'season', 'title', 'slug', 'description', 'page_path', 'is_active', 'order')
         }),
         ('Медиа', {
             'fields': ('image', 'video')
