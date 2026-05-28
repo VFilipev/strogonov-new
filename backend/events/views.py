@@ -33,18 +33,21 @@ class EventCalculatorRequestViewSet(mixins.CreateModelMixin,
     queryset = EventCalculatorRequest.objects.all()
     parser_classes = [JSONParser]
 
+    def _is_public_create(self):
+        return self.request.method == 'POST' and 'pk' not in self.kwargs
+
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self._is_public_create():
             return EventCalculatorRequestCreateSerializer
         return EventCalculatorRequestSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self._is_public_create():
             return [AllowAny()]
         return [IsAuthenticated()]
 
     def get_authenticators(self):
-        if self.action == 'create':
+        if self._is_public_create():
             return []
         return super().get_authenticators()
 
