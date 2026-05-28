@@ -43,6 +43,11 @@ class EventCalculatorRequestViewSet(mixins.CreateModelMixin,
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    def get_authenticators(self):
+        if self.action == 'create':
+            return []
+        return super().get_authenticators()
+
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
             serializer = self.get_serializer(data=request.data)
