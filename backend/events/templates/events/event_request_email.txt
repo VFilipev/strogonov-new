@@ -1,0 +1,45 @@
+Новая заявка с event-calculator №{{ request_id }}
+
+Контакт:
+- Имя: {{ contact_name }}
+- Телефон: {{ contact_phone }}
+- Email: {{ contact_email }}
+
+Мероприятие:
+- Тип: {{ event_type }}
+- Дата: {{ event_date }}
+- Гостей: {{ guest_count }}
+
+Размещение:
+- Заезд: {{ check_in }}
+- Выезд: {{ check_out }}
+- Ночей: {{ nights }}
+
+Коттеджи:
+{% if cottages %}{% for house in cottages %}- {{ house.name }} — {{ house.price_per_night }} ₽/сутки × {{ house.nights }} = {{ house.line_total }} ₽
+{% endfor %}{% else %}- Не выбрано
+{% endif %}
+Модульные дома:
+{% if modular %}{% for house in modular %}- {{ house.name }} — {{ house.price_per_night }} ₽/сутки × {{ house.nights }} = {{ house.line_total }} ₽
+{% endfor %}{% else %}- Не выбрано
+{% endif %}
+- Итого размещение: {{ accommodation_subtotal }} ₽
+
+Кейтеринг:
+- Тариф: {{ catering_label }}
+- Цена: {{ catering_price_per_guest }} ₽/гость
+- Итого: {{ catering_subtotal }} ₽
+
+Развлечения:
+{% if entertainment %}{% for item in entertainment %}- {{ item.label }} — {{ item.price }} ₽
+{% endfor %}{% else %}- Не выбрано
+{% endif %}
+Дополнительные услуги:
+{% if additional_services %}{% for item in additional_services %}- {{ item.label }} — {{ item.price }} ₽
+{% endfor %}{% else %}- Не выбрано
+{% endif %}
+Итоги:
+- Аренда площадки: {{ venue_base }} ₽
+- Развлечения: {{ entertainment_subtotal }} ₽
+- Доп. услуги: {{ additional_subtotal }} ₽
+- Предварительный итог: {{ estimated_total }} ₽

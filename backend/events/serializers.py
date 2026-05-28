@@ -1,5 +1,7 @@
+import re
+
 from rest_framework import serializers
-from .models import EventType
+from .models import EventType, EventCalculatorRequest
 from core.serializer_mixins import ImageVariantsMixin
 
 
@@ -66,3 +68,55 @@ class EventTypeSerializer(ImageVariantsMixin, serializers.ModelSerializer):
             'robots_meta': obj.robots_meta,
         }
 
+
+class EventCalculatorRequestCreateSerializer(serializers.ModelSerializer):
+
+    event_type = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    contact_phone = serializers.CharField(required=False, allow_blank=True, max_length=40)
+    contact_email = serializers.EmailField(required=False, allow_blank=True)
+
+    class Meta:
+        model = EventCalculatorRequest
+        fields = (
+            'contact_name',
+            'contact_phone',
+            'contact_email',
+            'event_type',
+            'payload',
+        )
+
+    def validate_contact_name(self, value):
+        value = (value or '').strip()
+        if len(value) < 2:
+            raise serializers.ValidationError('Укажите имя (не менее 2 символов).')
+        return value
+
+    def validate_payload(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError('payload должен быть JSON-объектом.')
+        return value
+
+    def validate(self, attrs):
+        email = (attrs.get('contact_email') or '').strip()
+        phone = attrs.get('contact_phone') or ''
+        digits = re.sub(r'\D', '', phone)
+        if not email and len(digits) < 10:
+            raise serializers.ValidationError('Укажите e-mail или телефон для связи.')
+        return attrs
+
+
+class EventCalculatorRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EventCalculatorRequest
+        fields = (
+            'id',
+            'contact_name',
+            'contact_phone',
+            'contact_email',
+            'event_type',
+            'payload',
+            'status',
+            'created_at',
+        )
+        read_only_fields = fields

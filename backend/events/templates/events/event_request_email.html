@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+  <body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.5;">
+    <h2 style="margin: 0 0 12px;">Новая заявка с event-calculator №{{ request_id }}</h2>
+
+    <h3>Контакт</h3>
+    <ul>
+      <li><b>Имя:</b> {{ contact_name }}</li>
+      <li><b>Телефон:</b> {{ contact_phone }}</li>
+      <li><b>Email:</b> {{ contact_email }}</li>
+    </ul>
+
+    <h3>Мероприятие</h3>
+    <ul>
+      <li><b>Тип:</b> {{ event_type }}</li>
+      <li><b>Дата:</b> {{ event_date }}</li>
+      <li><b>Гостей:</b> {{ guest_count }}</li>
+    </ul>
+
+    <h3>Размещение</h3>
+    <ul>
+      <li><b>Заезд:</b> {{ check_in }}</li>
+      <li><b>Выезд:</b> {{ check_out }}</li>
+      <li><b>Ночей:</b> {{ nights }}</li>
+    </ul>
+
+    <p><b>Коттеджи:</b></p>
+    <ul>
+      {% if cottages %}
+        {% for house in cottages %}
+          <li>{{ house.name }} — {{ house.price_per_night }} ₽/сутки × {{ house.nights }} = {{ house.line_total }} ₽</li>
+        {% endfor %}
+      {% else %}
+        <li>Не выбрано</li>
+      {% endif %}
+    </ul>
+
+    <p><b>Модульные дома:</b></p>
+    <ul>
+      {% if modular %}
+        {% for house in modular %}
+          <li>{{ house.name }} — {{ house.price_per_night }} ₽/сутки × {{ house.nights }} = {{ house.line_total }} ₽</li>
+        {% endfor %}
+      {% else %}
+        <li>Не выбрано</li>
+      {% endif %}
+    </ul>
+
+    <p><b>Итого размещение:</b> {{ accommodation_subtotal }} ₽</p>
+
+    <h3>Кейтеринг</h3>
+    <ul>
+      <li><b>Тариф:</b> {{ catering_label }}</li>
+      <li><b>Цена:</b> {{ catering_price_per_guest }} ₽/гость</li>
+      <li><b>Итого:</b> {{ catering_subtotal }} ₽</li>
+    </ul>
+
+    <h3>Развлечения</h3>
+    <ul>
+      {% if entertainment %}
+        {% for item in entertainment %}
+          <li>{{ item.label }} — {{ item.price }} ₽</li>
+        {% endfor %}
+      {% else %}
+        <li>Не выбрано</li>
+      {% endif %}
+    </ul>
+
+    <h3>Дополнительные услуги</h3>
+    <ul>
+      {% if additional_services %}
+        {% for item in additional_services %}
+          <li>{{ item.label }} — {{ item.price }} ₽</li>
+        {% endfor %}
+      {% else %}
+        <li>Не выбрано</li>
+      {% endif %}
+    </ul>
+
+    <h3>Итоги</h3>
+    <ul>
+      <li><b>Аренда площадки:</b> {{ venue_base }} ₽</li>
+      <li><b>Развлечения:</b> {{ entertainment_subtotal }} ₽</li>
+      <li><b>Доп. услуги:</b> {{ additional_subtotal }} ₽</li>
+      <li><b>Предварительный итог:</b> {{ estimated_total }} ₽</li>
+    </ul>
+  </body>
+</html>

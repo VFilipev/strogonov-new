@@ -90,3 +90,38 @@ class EventType(SEOMixin):
             schema["image"] = self.image.url
 
         return schema
+
+
+class EventCalculatorRequest(models.Model):
+
+    STATUS_CHOICES = [
+        ('new', 'Новая'),
+        ('in_progress', 'В работе'),
+        ('done', 'Обработана'),
+    ]
+
+    contact_name = models.CharField(max_length=255, verbose_name='Имя')
+    contact_phone = models.CharField(max_length=40, blank=True, verbose_name='Телефон')
+    contact_email = models.EmailField(blank=True, verbose_name='E-mail')
+    event_type = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Тип мероприятия (кириллица)',
+    )
+    payload = models.JSONField(verbose_name='JSON заявки')
+    status = models.CharField(
+        max_length=32,
+        choices=STATUS_CHOICES,
+        default='new',
+        verbose_name='Статус',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Заявка калькулятора мероприятия'
+        verbose_name_plural = 'Заявки калькулятора мероприятия'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        label = self.event_type or 'Без типа'
+        return f'{label} — {self.contact_name} ({self.created_at:%d.%m.%Y %H:%M})'
