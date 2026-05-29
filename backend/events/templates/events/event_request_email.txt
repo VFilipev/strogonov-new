@@ -1,4 +1,4 @@
-Новая заявка с event-calculator №{{ request_id }}
+Новая заявка на мероприятие №{{ request_id }}
 
 Контакт:
 - Имя: {{ contact_name }}
