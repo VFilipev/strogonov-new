@@ -66,13 +66,17 @@ class LodgeAvailabilitySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'order']
 
 
+class LodgeCategoryBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LodgeCategory
+        fields = ['id', 'name', 'slug']
+
+
 class LodgeSerializer(serializers.ModelSerializer):
     images = LodgeImageSerializer(many=True, read_only=True)
     lodge_type_name = serializers.CharField(source='lodge_type.name', read_only=True)
     lodge_type_slug = serializers.CharField(source='lodge_type.slug', read_only=True)
-    category_id = serializers.IntegerField(source='category.id', read_only=True)
-    category_name = serializers.CharField(source='category.name', read_only=True)
-    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    categories = LodgeCategoryBriefSerializer(many=True, read_only=True)
     price_set = LodgePriceSerializer(many=True, read_only=True)
     special_price_set = serializers.SerializerMethodField()
     availability_set = LodgeAvailabilitySerializer(many=True, read_only=True)
@@ -83,7 +87,7 @@ class LodgeSerializer(serializers.ModelSerializer):
         model = Lodge
         fields = [
             'id', 'name', 'slug', 'lodge_type', 'lodge_type_name', 'lodge_type_slug',
-            'category_id', 'category_name', 'category_slug',
+            'categories', 'quantity',
             'description', 'short_description', 'capacity', 'area', 'price_from',
             'location_description', 'is_active', 'order', 'conveniences', 'include',
             'bronirui_online_url',

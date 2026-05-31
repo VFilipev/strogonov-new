@@ -101,13 +101,16 @@ class Lodge(SEOMixin):
         related_name='lodges',
         verbose_name='Тип размещения'
     )
-    category = models.ForeignKey(
+    categories = models.ManyToManyField(
         'LodgeCategory',
-        on_delete=models.SET_NULL,
         related_name='lodges',
         blank=True,
-        null=True,
-        verbose_name='Категория размещения'
+        verbose_name='Категории размещения'
+    )
+    quantity = models.PositiveIntegerField(
+        default=1,
+        verbose_name='Количество домов',
+        help_text='Сколько одинаковых домов доступно в этой категории'
     )
     name = models.CharField(
         max_length=255,

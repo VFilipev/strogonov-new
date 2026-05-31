@@ -34,8 +34,8 @@ class LodgeTypeViewSet(viewsets.ReadOnlyModelViewSet):
             ),
             Prefetch(
                 'lodges',
-                queryset=Lodge.objects.filter(is_active=True).select_related('lodge_type', 'category').prefetch_related(
-                    'images', 'price_set', 'availability_set'
+                queryset=Lodge.objects.filter(is_active=True).select_related('lodge_type').prefetch_related(
+                    'categories', 'images', 'price_set', 'availability_set'
                 )
             )
         )
@@ -70,8 +70,8 @@ class LodgeCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class LodgeViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Lodge.objects.filter(is_active=True).select_related('lodge_type', 'category').prefetch_related(
-        'images', 'price_set', 'availability_set'
+    queryset = Lodge.objects.filter(is_active=True).select_related('lodge_type').prefetch_related(
+        'categories', 'images', 'price_set', 'availability_set'
     )
     serializer_class = LodgeSerializer
     permission_classes = [AllowAny]

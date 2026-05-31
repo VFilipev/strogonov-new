@@ -30,13 +30,6 @@ class News(SEOMixin):
         verbose_name='Краткое описание',
         help_text='Краткое описание для списков и превью'
     )
-    excerpt = models.TextField(
-        max_length=300,
-        blank=True,
-        null=True,
-        verbose_name='Анонс',
-        help_text='Краткий анонс новости (до 300 символов)'
-    )
     image = models.ImageField(
         upload_to='news/',
         blank=True,
@@ -78,11 +71,6 @@ class News(SEOMixin):
         verbose_name='Опубликовано',
         help_text='Отображать новость на сайте'
     )
-    reading_time = models.PositiveIntegerField(
-        default=0,
-        verbose_name='Время чтения (минуты)',
-        help_text='Примерное время чтения в минутах'
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания'
@@ -104,27 +92,10 @@ class News(SEOMixin):
         if not self.slug:
             self.slug = slugify(self.title)
 
-
-        if self.content:
-            self.reading_time = self.calculate_reading_time()
-
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('news:detail', kwargs={'slug': self.slug})
-
-    def calculate_reading_time(self):
-
-
-        words_per_minute = 200
-
-
-        word_count = len(self.content.split())
-
-
-        reading_time = max(1, round(word_count / words_per_minute))
-
-        return reading_time
 
     def get_schema_org_json(self):
         site_settings = None
@@ -138,7 +109,7 @@ class News(SEOMixin):
             "@context": "https://schema.org",
             "@type": "NewsArticle",
             "headline": self.title,
-            "description": self.short_description or self.excerpt or self.content[:200] if self.content else "",
+            "description": self.short_description or (self.content[:200] if self.content else ""),
             "datePublished": self.published_at.isoformat() if self.published_at else "",
             "dateModified": self.updated_at.isoformat() if self.updated_at else "",
         }
@@ -151,8 +122,5 @@ class News(SEOMixin):
                 "@type": "Organization",
                 "name": site_settings.site_name
             }
-
-        if self.reading_time:
-            schema["timeRequired"] = f"PT{self.reading_time}M"
 
         return schema

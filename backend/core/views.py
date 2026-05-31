@@ -271,15 +271,23 @@ class GuestFeedbackViewSet(mixins.CreateModelMixin,
     queryset = GuestFeedback.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def _is_public_create(self):
+        return self.request.method == 'POST' and 'pk' not in self.kwargs
+
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self._is_public_create():
             return GuestFeedbackCreateSerializer
         return GuestFeedbackSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self._is_public_create():
             return [AllowAny()]
         return [IsAuthenticated()]
+
+    def get_authenticators(self):
+        if self._is_public_create():
+            return []
+        return super().get_authenticators()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -288,7 +296,6 @@ class GuestFeedbackViewSet(mixins.CreateModelMixin,
         instance = serializer.instance
         out = GuestFeedbackSerializer(instance, context={'request': request})
         return Response(out.data, status=status.HTTP_201_CREATED)
-
 
 
 sitemaps = {

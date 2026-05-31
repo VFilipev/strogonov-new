@@ -31,4 +31,3 @@ urlpatterns = [
     path('robots.txt', robots_txt, name='robots'),
     path('', include(router.urls)),
 ]
-

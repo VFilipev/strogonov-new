@@ -27,7 +27,8 @@ class SiteSettingsAdmin(SingletonModelAdmin):
             'fields': ('registry_number', 'registry_url')
         }),
         ('Главная страница', {
-            'fields': ('hero_image', 'hero_title', 'hero_subtitle')
+            'fields': ('homepage_show_news',),
+            'description': 'Видимость блоков на главной. Hero-секция редактируется в разделе «Hero секции».',
         }),
         ('План базы', {
             'fields': ('base_plan_image', 'base_plan_description')
@@ -197,3 +198,4 @@ class GuestFeedbackAdmin(admin.ModelAdmin):
             'fields': ('message', 'attachment'),
         }),
     )
+

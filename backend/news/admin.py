@@ -16,18 +16,18 @@ def make_unpublished(modeladmin, request, queryset):
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
 
-    list_display = ['title', 'is_published', 'published_at', 'reading_time', 'created_at']
+    list_display = ['title', 'is_published', 'published_at', 'created_at']
     list_filter = ['is_published', 'published_at', 'created_at']
-    search_fields = ['title', 'content', 'short_description', 'excerpt']
+    search_fields = ['title', 'content', 'short_description']
     prepopulated_fields = {'slug': ('title',)}
     date_hierarchy = 'published_at'
     ordering = ['-published_at', '-created_at']
     actions = [make_published, make_unpublished]
-    readonly_fields = ['reading_time', 'created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at']
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'slug', 'short_description', 'excerpt')
+            'fields': ('title', 'slug', 'short_description')
         }),
         ('Содержание', {
             'fields': ('content',)
@@ -36,7 +36,7 @@ class NewsAdmin(admin.ModelAdmin):
             'fields': ('image',)
         }),
         ('Публикация', {
-            'fields': ('is_published', 'published_at', 'reading_time')
+            'fields': ('is_published', 'published_at')
         }),
         ('Системная информация', {
             'classes': ('collapse',),

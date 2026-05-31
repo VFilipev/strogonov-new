@@ -53,16 +53,17 @@ class LodgeTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Lodge)
 class LodgeAdmin(admin.ModelAdmin):
-    list_display = ['name', 'lodge_type', 'capacity', 'area', 'price_from', 'is_active', 'order']
-    list_filter = ['lodge_type', 'category', 'is_active']
+    list_display = ['name', 'lodge_type', 'quantity', 'capacity', 'area', 'price_from', 'is_active', 'order']
+    list_filter = ['lodge_type', 'categories', 'is_active']
     search_fields = ['name', 'description', 'short_description', 'location_description']
     prepopulated_fields = {'slug': ('name',)}
+    filter_horizontal = ['categories']
     inlines = [LodgeImageInline, LodgePriceInline, LodgeAvailabilityInline]
     ordering = ['order', 'name']
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('lodge_type', 'category', 'name', 'slug', 'description', 'short_description', 'is_active', 'order')
+            'fields': ('lodge_type', 'categories', 'quantity', 'name', 'slug', 'description', 'short_description', 'is_active', 'order')
         }),
         ('Характеристики', {
             'fields': ('capacity', 'area', 'price_from', 'location_description')

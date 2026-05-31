@@ -12,9 +12,9 @@ class NewsListSerializer(ImageVariantsMixin, serializers.ModelSerializer):
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'slug', 'short_description', 'excerpt',
+            'id', 'title', 'slug', 'short_description',
             'image_url', 'image_webp_url', 'image_variants',
-            'published_at', 'reading_time'
+            'published_at',
         ]
 
     def get_image_url(self, obj):
@@ -61,9 +61,9 @@ class NewsDetailSerializer(ImageVariantsMixin, serializers.ModelSerializer):
     class Meta:
         model = News
         fields = [
-            'id', 'title', 'slug', 'content', 'short_description', 'excerpt',
+            'id', 'title', 'slug', 'content', 'short_description',
             'image_url', 'image_webp_url', 'image_variants',
-            'published_at', 'is_published', 'reading_time',
+            'published_at', 'is_published',
             'created_at', 'updated_at', 'schema_org_json', 'seo_fields'
         ]
 

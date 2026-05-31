@@ -3,6 +3,7 @@ from .models import Lodge
 
 
 class LodgeFilter(filters.FilterSet):
+    category = filters.NumberFilter(field_name='categories')
 
     price_from_min = filters.NumberFilter(field_name='price_from', lookup_expr='gte')
     price_from_max = filters.NumberFilter(field_name='price_from', lookup_expr='lte')

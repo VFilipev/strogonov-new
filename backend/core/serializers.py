@@ -335,9 +335,6 @@ class GalleryLayoutApplySerializer(serializers.Serializer):
 class SiteSettingsSerializer(ImageVariantsMixin, serializers.ModelSerializer):
     logo_url = serializers.SerializerMethodField()
     national_projects_logo_url = serializers.SerializerMethodField()
-    hero_image_url = serializers.SerializerMethodField()
-    hero_image_variants = serializers.SerializerMethodField()
-    hero_image_placeholder_url = serializers.SerializerMethodField()
     base_plan_image_url = serializers.SerializerMethodField()
     base_plan_image_variants = serializers.SerializerMethodField()
     base_plan_image_placeholder_url = serializers.SerializerMethodField()
@@ -347,12 +344,11 @@ class SiteSettingsSerializer(ImageVariantsMixin, serializers.ModelSerializer):
         model = SiteSettings
         fields = [
             'id', 'site_name', 'site_active', 'nav_show_services', 'nav_show_tours',
+            'homepage_show_news',
             'logo_url', 'phone_primary', 'phone_secondary',
             'email', 'address', 'telegram_url', 'vk_url',
             'registry_number', 'registry_url',
-            'national_projects_logo_url', 'hero_image_url',
-            'hero_image_variants', 'hero_image_placeholder_url',
-            'hero_title', 'hero_subtitle',
+            'national_projects_logo_url',
             'base_plan_image_url', 'base_plan_image_variants',
             'base_plan_image_placeholder_url',
             'base_plan_description', 'seo_fields'
@@ -374,26 +370,6 @@ class SiteSettingsSerializer(ImageVariantsMixin, serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.national_projects_logo.url)
             return obj.national_projects_logo.url
         return None
-
-    def get_hero_image_url(self, obj):
-        if obj.hero_image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.hero_image.url)
-            return obj.hero_image.url
-        return None
-
-    def get_hero_image_variants(self, obj):
-        if not obj.hero_image:
-            return None
-        variant_fields = {
-            'full': 'hero_image_full_webp',
-            'thumb': 'hero_image_thumb_webp',
-        }
-        return super().get_image_variants(obj, variant_fields, 'hero_image')
-
-    def get_hero_image_placeholder_url(self, obj):
-        return super().get_image_placeholder_url(obj, 'hero_image_placeholder_webp', 'hero_image')
 
     def get_base_plan_image_url(self, obj):
 

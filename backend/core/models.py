@@ -91,6 +91,11 @@ class SiteSettings(SingletonModel, SEOMixin):
         verbose_name='Пункт «Туры» в меню',
         help_text='Ссылка на страницу снегоходных туров.',
     )
+    homepage_show_news = models.BooleanField(
+        default=True,
+        verbose_name='Блок «Новости» на главной',
+        help_text='Показывать секцию новостей на главной странице.',
+    )
     logo = models.ImageField(
         upload_to='site/',
         blank=True,
@@ -145,42 +150,6 @@ class SiteSettings(SingletonModel, SEOMixin):
         blank=True,
         null=True,
         verbose_name='Логотип национальных проектов'
-    )
-    hero_image = models.ImageField(
-        upload_to='site/',
-        blank=True,
-        null=True,
-        verbose_name='Главное изображение'
-    )
-
-    hero_image_full_webp = ImageSpecField(
-        source='hero_image',
-        processors=[SmartCropProcessor(1920, 1080)],
-        format='WEBP',
-        options={'quality': 85}
-    )
-    hero_image_thumb_webp = ImageSpecField(
-        source='hero_image',
-        processors=[ResizeToFill(400, 225)],
-        format='WEBP',
-        options={'quality': 75}
-    )
-    hero_image_placeholder_webp = ImageSpecField(
-        source='hero_image',
-        processors=[NoOpProcessor()],
-        format='WEBP',
-        options={'quality': 50}
-    )
-    hero_title = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name='Заголовок главной секции'
-    )
-    hero_subtitle = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Подзаголовок главной секции'
     )
     base_plan_image = models.ImageField(
         upload_to='site/',

@@ -33,6 +33,7 @@ def api_root(request, format=None):
             'statistics': f'{base_url}/statistics/',
             'gallery': f'{base_url}/gallery/',
             'guest-feedback': f'{base_url}/guest-feedback/',
+            'event-calculator-requests': f'{base_url}/events/requests/',
             'admin-status': f'{base_url}/auth/admin-status/',
             'csrf': f'{base_url}/auth/csrf/',
             'hero-edit-active': f'{base_url}/auth/edit/hero/active/',
@@ -44,4 +45,3 @@ def api_root(request, format=None):
         'sitemap': f'{base_url}/sitemap.xml',
         'robots': f'{base_url}/robots.txt',
     })
-

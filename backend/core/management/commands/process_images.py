@@ -75,7 +75,7 @@ class Command(BaseCommand):
                                           
                 try:
                     obj = model_class.objects.get()
-                    if obj.hero_image or obj.base_plan_image:
+                    if obj.base_plan_image:
                         self._process_object(obj, model_name)
                         total_processed += 1
                 except model_class.DoesNotExist:
