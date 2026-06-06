@@ -1,16 +1,30 @@
 <script setup>
 import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue'
-import { useLodgeTypes } from '~/composables/useLodges'
+import { LodgeCategoriesApi, LodgesApi, LodgeTypesApi } from '~/utils/api'
+import { normalizeListResponse } from '~/utils/apiHelpers'
 
 const LodgeModal = defineAsyncComponent(() =>
   import('~/components/lodge/LodgeModal.vue')
 )
 
-const { types: lodgeTypes } = useLodgeTypes()
+const { data: lodgeTypesData } = await useAsyncData(
+  'lodge-types-modal-compact',
+  () => LodgeTypesApi.getList({ compact: 1 }),
+  {
+    default: () => [],
+    server: true,
+  }
+)
+
+const lodgeTypes = computed(() => normalizeListResponse(lodgeTypesData.value))
 
 const selectedType = ref(null)
 const showContent = ref(false)
 const isClosing = ref(false)
+const modalCategories = ref([])
+const modalItems = ref([])
+const loadingCategories = ref(false)
+const loadingItems = ref(false)
 
 const cardRefs = ref({})
 const setCardRef = (slug) => (el) => {
@@ -22,7 +36,7 @@ const setCardRef = (slug) => (el) => {
 const modalMeta = computed(() => {
   if (!selectedType.value || !lodgeTypes.value) return null
 
-  const type = lodgeTypes.value.find(t => t.slug === selectedType.value || t.id === selectedType.value)
+  const type = lodgeTypes.value.find((t) => t.slug === selectedType.value || t.id === selectedType.value)
   if (!type) return null
 
   return {
@@ -33,18 +47,19 @@ const modalMeta = computed(() => {
   }
 })
 
-const modalItems = computed(() => {
-  if (!selectedType.value || !lodgeTypes.value) return []
+const isModularType = (type) => {
+  if (!type) return false
+  return type.slug === 'modulnye-doma' || String(type.name || '').toLowerCase().includes('модульн')
+}
 
-  const type = lodgeTypes.value.find(t => t.slug === selectedType.value || t.id === selectedType.value)
-  if (!type || !type.lodges) return []
+const mapLodgeToModalItem = (lodge, houseType, selectedCategoryId = null) => {
+  const categories = lodge.categories || []
+  const selectedCategory = selectedCategoryId
+    ? categories.find((item) => Number(item.id) === Number(selectedCategoryId))
+    : null
+  const primaryCategory = selectedCategory || categories[0] || null
 
-  let houseType = 'wooden'
-  if (type.slug === 'modulnye-doma' || type.name.toLowerCase().includes('модульн')) {
-    houseType = 'modular'
-  }
-
-  return type.lodges.map(lodge => ({
+  return {
     id: lodge.id,
     name: lodge.name,
     slug: lodge.slug,
@@ -52,13 +67,44 @@ const modalItems = computed(() => {
     capacityNum: lodge.capacity,
     area: parseFloat(lodge.area) || 0,
     priceFrom: parseFloat(lodge.price_from) || 0,
-    houseType: houseType,
-    images: lodge.images?.map(img =>
+    quantity: Number(lodge.quantity || 0),
+    houseType,
+    categories,
+    category: primaryCategory?.name || null,
+    images: lodge.images?.map((img) =>
       img.image_webp_url || img.image_url || img.image_variants?.card
     ) || [],
     imageVariants: lodge.images?.map(img => img.image_variants) || [],
-  }))
-})
+  }
+}
+
+const loadCategories = async (typeId) => {
+  loadingCategories.value = true
+  try {
+    const data = await LodgeCategoriesApi.getList({ lodge_type: typeId })
+    modalCategories.value = normalizeListResponse(data)
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+const loadLodges = async (typeId, categoryId = null) => {
+  loadingItems.value = true
+  try {
+    const filter = { lodge_type: typeId }
+    if (categoryId) {
+      filter.category = categoryId
+    }
+    const data = await LodgesApi.getList(filter)
+    const selectedTypeData = lodgeTypes.value.find((t) => t.id === typeId || t.slug === selectedType.value)
+    const houseType = isModularType(selectedTypeData) ? 'modular' : 'wooden'
+    modalItems.value = normalizeListResponse(data).map((lodge) =>
+      mapLodgeToModalItem(lodge, houseType, categoryId)
+    )
+  } finally {
+    loadingItems.value = false
+  }
+}
 
 const isOpen = computed(() => !!selectedType.value)
 
@@ -80,11 +126,41 @@ const handleTypeClick = (slug) => {
   selectedType.value = slug
 }
 
+const onTypeSelected = async (typeSlug) => {
+  const type = lodgeTypes.value.find((item) => item.slug === typeSlug || item.id === typeSlug)
+  if (!type) return
+  modalCategories.value = []
+  modalItems.value = []
+  if (isModularType(type)) {
+    await loadCategories(type.id)
+    const firstCategory = modalCategories.value[0]
+    if (firstCategory?.id) {
+      await loadLodges(type.id, firstCategory.id)
+      return
+    }
+  }
+  await loadLodges(type.id)
+}
+
+const handleModalCategoryChange = async (categoryValue) => {
+  if (!selectedType.value) return
+  const type = lodgeTypes.value.find((item) => item.slug === selectedType.value || item.id === selectedType.value)
+  if (!type || !isModularType(type)) return
+
+  const category = modalCategories.value.find((item) =>
+    String(item.slug || item.id) === String(categoryValue)
+  )
+  if (!category?.id) return
+  await loadLodges(type.id, category.id)
+}
+
 const handleClose = () => {
   showContent.value = false
   isClosing.value = true
   setTimeout(() => {
     selectedType.value = null
+    modalCategories.value = []
+    modalItems.value = []
     isClosing.value = false
   }, 800)
 }
@@ -98,6 +174,11 @@ watch(selectedType, (value) => {
     document.body.style.overflow = ''
     showContent.value = false
   }
+})
+
+watch(selectedType, async (value) => {
+  if (!value) return
+  await onTypeSelected(value)
 })
 
 onBeforeUnmount(() => {
@@ -159,6 +240,9 @@ onBeforeUnmount(() => {
           :show-content="showContent"
           :meta="modalMeta || {}"
           :items="modalItems"
+          :categories="modalCategories"
+          :loading-items="loadingItems || loadingCategories"
+          @category-change="handleModalCategoryChange"
           @close="handleClose"
         />
         <template #fallback>

@@ -81,13 +81,8 @@ watch(
 
 const handleKeydown = (e) => {
   if (!props.open) return
-
   if (e.key === 'Escape') {
     handleClose()
-  } else if (e.key === 'ArrowLeft' && swiperRef.value) {
-    swiperRef.value.slidePrev()
-  } else if (e.key === 'ArrowRight' && swiperRef.value) {
-    swiperRef.value.slideNext()
   }
 }
 
@@ -366,33 +361,7 @@ onUnmounted(() => {
 
   :global(.photo-viewer__swiper .swiper-button-next),
   :global(.photo-viewer__swiper .swiper-button-prev) {
-    width: 44px;
-    height: 44px;
-  }
-
-  :global(.photo-viewer__swiper .swiper-button-next) {
-    right: 12px;
-  }
-
-  :global(.photo-viewer__swiper .swiper-button-prev) {
-    left: 12px;
-  }
-
-  :global(.photo-viewer__swiper .swiper-button-next::after),
-  :global(.photo-viewer__swiper .swiper-button-prev::after) {
-    font-size: 7px;
-  }
-
-  :global(.photo-viewer__swiper .swiper-button-next svg),
-  :global(.photo-viewer__swiper .swiper-button-prev svg) {
-    width: 8px !important;
-    height: 8px !important;
-  }
-
-  :global(.photo-viewer__swiper .swiper-button-next .swiper-navigation-icon),
-  :global(.photo-viewer__swiper .swiper-button-prev .swiper-navigation-icon) {
-    width: 8px !important;
-    height: 8px !important;
+    display: none !important;
   }
 }
 </style>

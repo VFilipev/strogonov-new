@@ -11,6 +11,9 @@ function formatRub(value) {
   return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
 }
 
+const afishaCoverStyle = (src) =>
+  src ? { backgroundImage: `url("${String(src)}")` } : {};
+
 const isVisible = ref(false);
 const sectionRef = ref(null);
 let sectionObserver = null;
@@ -290,59 +293,73 @@ onBeforeUnmount(() => {
           role="dialog"
           aria-modal="true"
           :aria-labelledby="selected ? 'afisha-modal-title' : undefined"
-          class="relative z-[101] flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-background shadow-2xl sm:rounded-2xl"
+          class="relative z-[101] flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-background shadow-2xl sm:h-[84vh] sm:max-h-[84vh] sm:max-w-5xl sm:flex-row sm:rounded-2xl"
           @click.stop
         >
-          <div class="relative aspect-[16/9] shrink-0 sm:aspect-[2/1]">
-            <NuxtImg
-              :src="selected.image"
-              :alt="selected.title"
-              width="800"
-              height="450"
-              class="h-full w-full object-cover"
-              sizes="100vw"
-            />
-            <button
-              type="button"
-              class="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/90 text-foreground shadow-md transition-colors hover:bg-background"
-              aria-label="Закрыть"
-              @click="closeModal"
-            >
-              <span class="text-xl leading-none" aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="min-h-0 flex-1 overflow-y-auto p-6">
-            <p class="mb-2 text-sm italic text-[#0b4134]">
-              {{ selected.dateLabel }}
-            </p>
-            <h3
-              id="afisha-modal-title"
-              class="mb-4 font-serif text-2xl text-foreground md:text-3xl"
-            >
-              {{ selected.title }}
-            </h3>
+          <div
+            class="relative aspect-[16/9] shrink-0 overflow-hidden sm:aspect-auto sm:h-full sm:min-h-0 sm:flex-[0_0_44%]"
+          >
             <div
-              v-if="selected.pricePerGuest != null"
-              class="mb-4 border-b border-border/40 pb-4 text-base"
-            >
-              <p class="tabular-nums">
-                <span class="text-muted-foreground">За гостя: </span>
-                <span class="font-semibold text-foreground">{{ formatRub(selected.pricePerGuest) }}</span>
+              class="afisha-modal-cover absolute inset-0"
+              role="img"
+              :aria-label="selected.title"
+              :style="afishaCoverStyle(selected.image)"
+            />
+          </div>
+          <button
+            type="button"
+            class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background/90 text-foreground shadow-md transition-colors hover:bg-background sm:right-4 sm:top-4"
+            aria-label="Закрыть"
+            @click="closeModal"
+          >
+            <span class="text-xl leading-none" aria-hidden="true">×</span>
+          </button>
+          <div class="min-h-0 flex flex-1 flex-col overflow-hidden bg-background">
+            <div class="shrink-0 border-b border-border/40 p-6 pr-14 sm:p-8 sm:pr-16">
+              <p class="mb-2 text-sm italic text-[#0b4134]">
+                {{ selected.dateLabel }}
+              </p>
+              <h3
+                id="afisha-modal-title"
+                class="mb-4 font-serif text-2xl text-foreground md:text-3xl"
+              >
+                {{ selected.title }}
+              </h3>
+              <div
+                v-if="selected.pricePerGuest != null"
+                class="text-base"
+              >
+                <p class="tabular-nums">
+                  <span class="text-muted-foreground">За гостя: </span>
+                  <span class="font-semibold text-foreground">{{ formatRub(selected.pricePerGuest) }}</span>
+                </p>
+              </div>
+            </div>
+            <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4 sm:px-8 sm:pb-8 sm:pt-6">
+              <p class="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
+                {{ selected.fullDescription }}
               </p>
             </div>
-            <p class="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-              {{ selected.fullDescription }}
-            </p>
-            <button
-              type="button"
-              class="mt-6 w-full rounded-xl border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
-              @click="closeModal"
-            >
-              Закрыть
-            </button>
+            <div class="shrink-0 px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
+              <button
+                type="button"
+                class="w-full rounded-xl border border-primary bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:ml-auto sm:w-auto"
+                @click="closeModal"
+              >
+                Закрыть
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </Teleport>
   </section>
 </template>
+
+<style scoped>
+.afisha-modal-cover {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+</style>

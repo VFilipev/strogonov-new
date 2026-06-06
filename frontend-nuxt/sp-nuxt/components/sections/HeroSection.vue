@@ -85,9 +85,16 @@ const heroVideoRef = ref(null);
 const heroVideoLoaded = ref(false);
 const heroVideoPlaying = ref(false);
 const heroVideoError = ref(false);
+const heroVideoFrameReady = ref(false);
+const isSafariBrowser = ref(false);
 
 const shouldAutoplayHeroVideo = computed(() =>
   videoPlaybackAllowed.value && heroData.value?.autoplay_video !== false
+);
+const shouldLoopHeroVideo = computed(() => heroData.value?.loop_video !== false);
+
+const heroVideoMuted = computed(() =>
+  shouldAutoplayHeroVideo.value ? true : heroData.value?.mute_video !== false
 );
 
 const heroVideoMimeType = computed(() => {
@@ -100,12 +107,7 @@ const heroVideoMimeType = computed(() => {
 const showHeroPosterOverlay = computed(() => {
   if (!showHeroVideo.value) return false;
   if (heroVideoError.value) return true;
-  return !(heroVideoLoaded.value && heroVideoPlaying.value);
-});
-
-const heroVideoPosterStyle = computed(() => {
-  if (!heroVideoPoster.value) return {};
-  return { backgroundImage: `url("${heroVideoPoster.value}")` };
+  return !heroVideoFrameReady.value;
 });
 
 const heroBackgroundStyle = computed(() => {
@@ -122,22 +124,11 @@ const heroBackgroundStyle = computed(() => {
 
 useHead(() => ({
   link: [
-    {
-      rel: "preload",
-      as: "image",
-      href: logo,
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: nac,
-    },
     ...(heroVideoPoster.value
       ? [{ rel: "preload", as: "image", href: heroVideoPoster.value }]
       : []),
-    ...(showHeroVideo.value && heroVideoSrc.value
-      ? [{ rel: "preload", as: "video", href: heroVideoSrc.value }]
-      : []),
+    { rel: "preload", as: "image", href: logo },
+    { rel: "preload", as: "image", href: nac },
   ],
 }));
 
@@ -281,6 +272,7 @@ watch(
     heroVideoLoaded.value = false;
     heroVideoPlaying.value = false;
     heroVideoError.value = false;
+    heroVideoFrameReady.value = false;
     if (!isVideo || !import.meta.client) return;
     await nextTick();
     const video = heroVideoRef.value;
@@ -313,6 +305,9 @@ const playHeroVideo = async () => {
   if (!shouldAutoplayHeroVideo.value) return;
   const video = heroVideoRef.value;
   if (!video) return;
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
   try {
     await video.play();
   } catch {
@@ -320,13 +315,33 @@ const playHeroVideo = async () => {
   }
 };
 
+const markHeroVideoFrameReady = (video) => {
+  if (!video || heroVideoFrameReady.value) return;
+  if (typeof video.requestVideoFrameCallback === "function") {
+    video.requestVideoFrameCallback(() => {
+      heroVideoFrameReady.value = true;
+    });
+    return;
+  }
+  if (video.currentTime > 0.01) {
+    heroVideoFrameReady.value = true;
+  }
+};
+
 const handleHeroVideoLoadedData = async () => {
   heroVideoLoaded.value = true;
+  markHeroVideoFrameReady(heroVideoRef.value);
   await playHeroVideo();
 };
 
-const handleHeroVideoPlaying = () => {
+const handleHeroVideoCanPlay = async () => {
+  markHeroVideoFrameReady(heroVideoRef.value);
+  await playHeroVideo();
+};
+
+const handleHeroVideoPlaying = (event) => {
   heroVideoPlaying.value = true;
+  markHeroVideoFrameReady(event?.target || heroVideoRef.value);
 };
 
 const handleHeroVideoPause = () => {
@@ -341,6 +356,20 @@ const handleHeroVideoError = () => {
   heroVideoPlaying.value = false;
 };
 
+const handleHeroVideoTimeUpdate = async (event) => {
+  if (!shouldLoopHeroVideo.value) return;
+  const video = event?.target;
+  if (!video || !Number.isFinite(video.duration) || video.duration <= 0 || video.seeking) return;
+  if (video.currentTime > 0.01 && !heroVideoFrameReady.value) {
+    heroVideoFrameReady.value = true;
+  }
+  if (video.duration - video.currentTime > 0.08) return;
+  video.currentTime = 0.001;
+  if (video.paused) {
+    await playHeroVideo();
+  }
+};
+
 onMounted(async () => {
   if (!import.meta.client) return;
 
@@ -349,6 +378,7 @@ onMounted(async () => {
     /AppleWebKit/i.test(ua) &&
     /Safari/i.test(ua) &&
     !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS|EdgiOS)/i.test(ua);
+  isSafariBrowser.value = isSafari;
 
   const prefersReducedMotion = window.matchMedia?.(
     "(prefers-reduced-motion: reduce)"
@@ -400,14 +430,23 @@ onBeforeUnmount(() => {
           v-if="showHeroVideo"
           ref="heroVideoRef"
           class="hero-video absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
-          :class="heroVideoPlaying ? 'opacity-100' : 'opacity-0'"
+          :class="heroVideoFrameReady ? 'opacity-100 visible' : 'opacity-0 invisible'"
           :poster="heroVideoPoster"
           playsinline
-          preload="auto"
+          webkit-playsinline="true"
+          x-webkit-airplay="deny"
+          disablepictureinpicture
+          disableremoteplayback
+          :controls="false"
+          preload="metadata"
           :autoplay="shouldAutoplayHeroVideo"
-          :loop="heroData?.loop_video !== false"
-          :muted="heroData?.mute_video !== false"
+          :loop="false"
+          :muted="heroVideoMuted"
+          :defaultMuted="heroVideoMuted"
+          :controlslist="isSafariBrowser ? 'nofullscreen noplaybackrate nodownload noremoteplayback' : undefined"
           @loadeddata="handleHeroVideoLoadedData"
+          @canplay="handleHeroVideoCanPlay"
+          @timeupdate="handleHeroVideoTimeUpdate"
           @playing="handleHeroVideoPlaying"
           @pause="handleHeroVideoPause"
           @error="handleHeroVideoError"
@@ -415,11 +454,15 @@ onBeforeUnmount(() => {
         >
           <source :src="heroVideoSrc" :type="heroVideoMimeType" />
         </video>
-        <div
+        <img
           v-if="showHeroPosterOverlay && heroVideoPoster"
-          class="hero-bg absolute inset-0 transition-opacity duration-500"
-          :class="heroVideoPlaying ? 'opacity-0' : 'opacity-100'"
-          :style="heroVideoPosterStyle"
+          :src="heroVideoPoster"
+          alt=""
+          class="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          :class="heroVideoFrameReady ? 'opacity-0' : 'opacity-100'"
+          loading="eager"
+          decoding="sync"
+          fetchpriority="high"
           aria-hidden="true"
         />
         <div
@@ -441,46 +484,39 @@ onBeforeUnmount(() => {
       >
         <div class="flex items-center gap-4 md:gap-8">
           <div class="flex items-center">
-            <NuxtImg
+            <img
               :src="logo"
               alt="Строгановские Просторы"
               width="200"
               height="64"
               class="h-10 w-auto transition-transform duration-300 hover:scale-105 md:h-16"
               fetchpriority="high"
+              loading="eager"
               decoding="async"
-              sizes="(max-width: 768px) 120px, 200px"
-              :preload="true"
             />
             <div class="mx-[0.6rem] h-16 w-px bg-white md:mx-[0.8rem] md:h-24"></div>
-            <NuxtImg
+            <img
               :src="nac"
               width="180"
               height="96"
               fetchpriority="high"
               alt="национальные проекты"
               class="h-16 w-auto md:h-24"
+              loading="eager"
               decoding="async"
-              sizes="(max-width: 768px) 120px, 180px"
-              :preload="true"
             />
           </div>
           <div v-if="!hideNavigation" class="hidden items-center gap-8 md:flex">
-            <NuxtLink
-              class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              to="/complain"
-              >ваше мнение</NuxtLink
-            >
             <a
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              href="/lodge"
+              href="#lodge"
               >дома</a
             >
-            <a
+            <NuxtLink
               v-if="showServicesNav"
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              href="#active"
-              >услуги</a
+              to="/services"
+              >услуги</NuxtLink
             >
             <NuxtLink
               v-if="showToursNav"
@@ -492,6 +528,16 @@ onBeforeUnmount(() => {
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
               href="/event-calculator"
               >афиша и мероприятия</a
+            >
+            <a
+              class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
+              href="/sauna"
+              >спа и баня</a
+            >
+            <a
+              class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
+              href="#restaurant"
+              >ресторан</a
             >
           </div>
         </div>
@@ -528,24 +574,18 @@ onBeforeUnmount(() => {
         class="mt-3 ml-auto w-full max-w-[360px] rounded-2xl border border-white/20 bg-primary/85 p-4 shadow-xl backdrop-blur-md md:hidden"
       >
         <div class="flex flex-col gap-3 text-primary-foreground">
-          <NuxtLink
-            class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            to="/complain"
-            @click="closeMobileMenu"
-            >ваше мнение</NuxtLink
-          >
           <a
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            href="/lodge"
+            href="#lodge"
             @click="closeMobileMenu"
             >дома</a
           >
-          <a
+          <NuxtLink
             v-if="showServicesNav"
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            href="#active"
+            to="/services"
             @click="closeMobileMenu"
-            >услуги</a
+            >услуги</NuxtLink
           >
           <NuxtLink
             v-if="showToursNav"
@@ -559,6 +599,12 @@ onBeforeUnmount(() => {
             href="/event-calculator"
             @click="closeMobileMenu"
             >мероприятия</a
+          >
+          <a
+            class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
+            href="#restaurant"
+            @click="closeMobileMenu"
+            >ресторан</a
           >
           <a
             href="tel:+73422333332"
@@ -708,6 +754,17 @@ onBeforeUnmount(() => {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.hero-video {
+  background-color: #000;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.hero-video::-webkit-media-controls-start-playback-button {
+  display: none;
+  -webkit-appearance: none;
 }
 
 @supports (-webkit-touch-callout: none) {

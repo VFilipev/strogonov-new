@@ -83,11 +83,12 @@ const { showServicesNav, showToursNav } = useNavVisibility()
           </div>
 
           <div class="hidden items-center gap-6 lg:flex">
-            <NuxtLink :class="getLinkClass('complain')" to="/complain">ваше мнение</NuxtLink>
             <NuxtLink :class="getLinkClass('lodge')" to="/lodge">дома</NuxtLink>
-            <a v-if="showServicesNav" :class="getLinkClass('services')" href="/#active">услуги</a>
+            <NuxtLink v-if="showServicesNav" :class="getLinkClass('services')" to="/services">услуги</NuxtLink>
             <NuxtLink v-if="showToursNav" :class="getLinkClass('tours')" to="/tours">туры</NuxtLink>
             <NuxtLink :class="getLinkClass('events')" to="/event-calculator">афиша и мероприятия</NuxtLink>
+            <NuxtLink :class="getLinkClass('sauna')" to="/sauna">спа и баня</NuxtLink>
+            <NuxtLink :class="getLinkClass('restaurant')" to="/#restaurant">ресторан</NuxtLink>
           </div>
         </div>
 
@@ -119,15 +120,14 @@ const { showServicesNav, showToursNav } = useNavVisibility()
         class="mt-3 ml-auto w-full max-w-[360px] rounded-2xl border border-white/20 bg-primary/95 p-4 shadow-xl backdrop-blur-md md:hidden"
       >
         <div class="flex flex-col gap-3 text-primary-foreground">
-          <NuxtLink :class="getLinkClass('complain')" to="/complain" @click="closeMobileMenu">ваше мнение</NuxtLink>
           <NuxtLink :class="getLinkClass('lodge')" to="/lodge" @click="closeMobileMenu">дома</NuxtLink>
-          <!-- <a
+          <NuxtLink
             v-if="showServicesNav"
             :class="getLinkClass('services')"
-            href="/#active"
+            to="/services"
             @click="closeMobileMenu"
-            >услуги</a
-          > -->
+            >услуги</NuxtLink
+          >
           <NuxtLink
             v-if="showToursNav"
             :class="getLinkClass('tours')"
@@ -137,6 +137,12 @@ const { showServicesNav, showToursNav } = useNavVisibility()
           >
           <NuxtLink :class="getLinkClass('events')" to="/event-calculator" @click="closeMobileMenu">
             афиша и мероприятия
+          </NuxtLink>
+          <NuxtLink :class="getLinkClass('sauna')" to="/sauna" @click="closeMobileMenu">
+            спа и баня
+          </NuxtLink>
+          <NuxtLink :class="getLinkClass('restaurant')" to="/#restaurant" @click="closeMobileMenu">
+            ресторан
           </NuxtLink>
           <a
             href="tel:+73422333332"

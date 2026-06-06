@@ -1,4 +1,50 @@
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
+
+const prefetchedUrls = new Set();
+
+function prefetchUrl(url) {
+  if (!url || prefetchedUrls.has(url)) return;
+  prefetchedUrls.add(url);
+  const img = new Image();
+  img.src = url;
+}
+
+function collectHouseImageUrls(house) {
+  if (!house) return [];
+  const urls = [];
+  if (house.img) urls.push(house.img);
+  if (house.photo_gallery_set?.length) {
+    for (const photo of house.photo_gallery_set) {
+      if (photo?.img) urls.push(photo.img);
+    }
+  }
+  return urls;
+}
+
+function schedulePrefetch(run) {
+  if (typeof window === "undefined") return;
+  if (typeof requestIdleCallback !== "undefined") {
+    requestIdleCallback(() => run(), { timeout: 1800 });
+  } else {
+    setTimeout(run, 150);
+  }
+}
+
+function preloadAdjacentHouseImages(houses, index) {
+  if (!houses?.length || houses.length <= 1 || typeof window === "undefined") return;
+  const len = houses.length;
+  const nextIndex = index === len - 1 ? 0 : index + 1;
+  const prevIndex = index === 0 ? len - 1 : index - 1;
+  const targets =
+    nextIndex === prevIndex ? [houses[nextIndex]] : [houses[nextIndex], houses[prevIndex]];
+  const urls = new Set();
+  for (const house of targets) {
+    for (const u of collectHouseImageUrls(house)) urls.add(u);
+  }
+  schedulePrefetch(() => {
+    urls.forEach(prefetchUrl);
+  });
+}
 
 export function useLodgeHouseSection(props) {
   const selectHouseIndex = ref(0);
@@ -37,27 +83,31 @@ export function useLodgeHouseSection(props) {
   };
 
   const setHouseIndex = (houseId) => {
-    if (houseId) {
-      const index = props.houses.findIndex((house) => house.id === houseId);
-      if (index !== -1) {
-        selectHouseIndex.value = index;
-      }
+    if (houseId == null) return;
+    const index = props.houses.findIndex(
+      (house) => Number(house.id) === Number(houseId)
+    );
+    if (index !== -1) {
+      selectHouseIndex.value = index;
     }
   };
 
-  onMounted(() => {
-    if (props.initialHouseId) {
+  watch(
+    [() => props.houses?.length, () => props.initialHouseId],
+    () => {
+      if (props.initialHouseId == null) return;
+      if (!props.houses?.length) return;
       setHouseIndex(props.initialHouseId);
-    }
-  });
+    },
+    { immediate: true }
+  );
 
   watch(
-    () => props.initialHouseId,
-    (newId) => {
-      if (newId) {
-        setHouseIndex(newId);
-      }
+    [selectHouseIndex, () => props.houses],
+    () => {
+      preloadAdjacentHouseImages(props.houses, selectHouseIndex.value);
     },
+    { flush: "post", immediate: true }
   );
 
   const swiperBreakpoints = {

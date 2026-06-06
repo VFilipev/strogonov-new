@@ -35,6 +35,7 @@ const fieldErrors = ref({})
 const submitStatus = ref('idle')
 const submitError = ref('')
 const isSubmitting = ref(false)
+const consentAccepted = ref(false)
 const fileInputRef = ref(null)
 
 function firstError(val) {
@@ -128,6 +129,7 @@ function clearFile() {
 async function onSubmit() {
   submitStatus.value = 'idle'
   submitError.value = ''
+  if (!consentAccepted.value) return
   if (!validate()) return
 
   const formData = new FormData()
@@ -153,6 +155,7 @@ async function onSubmit() {
     visitDate.value = ''
     visitTime.value = ''
     message.value = ''
+    consentAccepted.value = false
     clearFile()
     fieldErrors.value = {}
     await nextTick()
@@ -399,18 +402,38 @@ useHead({
                 </span>
               </div>
             </div>
-            <p class="text-xs text-muted-foreground">
-              Допустимые форматы: .doc, .pdf, .ppt, .docx, .pptx, .xls, .xlsx, .jpg, .png — до 10 Мб.
-            </p>
             <p v-if="attachmentError || fieldErrors.attachment" class="text-sm text-destructive">
               {{ attachmentError || fieldErrors.attachment }}
             </p>
-
+            <div class="flex gap-3 text-center md:text-left">
+              <input
+                id="complain-consent"
+                v-model="consentAccepted"
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 shrink-0 rounded border border-input text-primary accent-primary"
+              />
+              <label for="complain-consent" class="text-xs leading-relaxed text-muted-foreground">
+                Я даю
+                <NuxtLink
+                  href="/consent.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-primary underline underline-offset-2 hover:text-primary/90"
+                  >согласие</NuxtLink>
+                на
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-primary underline underline-offset-2 hover:text-primary/90"
+                  >обработку персональных данных</a>.
+              </label>
+            </div>
             <!-- Отправить -->
             <div class="flex flex-col items-stretch gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
               <button
                 type="submit"
-                :disabled="isSubmitting"
+                :disabled="isSubmitting || !consentAccepted"
                 class="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground shadow-sm transition-all hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-60"
               >
                 <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
@@ -419,10 +442,6 @@ useHead({
               </button>
             </div>
 
-            <p class="text-center text-xs leading-relaxed text-muted-foreground md:text-left">
-              Отправляя сообщение, вы принимаете условия соглашения об использовании сайта, в том числе в
-              части обработки и использования персональных данных.
-            </p>
           </div>
         </form>
         </template>

@@ -32,7 +32,7 @@ useHead({
           class="rounded-lg border border-border bg-card p-6 shadow-md"
         >
           <h2 class="mb-2 text-2xl font-serif text-primary">{{ item.title }}</h2>
-          <p class="mb-4 text-muted-foreground">{{ item.excerpt || item.description }}</p>
+          <p class="mb-4 text-muted-foreground">{{ item.short_description }}</p>
           <NuxtLink :to="`/news/${item.id}`" class="text-primary hover:underline"> Читать далее → </NuxtLink>
         </article>
       </div>

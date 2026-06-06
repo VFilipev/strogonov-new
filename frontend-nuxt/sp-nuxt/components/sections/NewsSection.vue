@@ -1,41 +1,59 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import news1Image from '~/assets/resort/news1.webp'
-import news2Image from '~/assets/resort/news2.webp'
-import news3Image from '~/assets/resort/news3.webp'
-import news4Image from '~/assets/resort/news4.webp'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { NuxtLink } from '#components'
+// import news1Image from '~/assets/resort/news1.webp'
+// import news2Image from '~/assets/resort/news2.webp'
+// import news3Image from '~/assets/resort/news3.webp'
+// import news4Image from '~/assets/resort/news4.webp'
+
+// const mockNews = [
+//   {
+//     id: 1,
+//     title: 'Афиша на ноябрь',
+//     date: '01 ноября 2025',
+//     image: news1Image,
+//   },
+//   {
+//     id: 2,
+//     title: 'Открыта бронь на квадротур до Чермоза',
+//     date: '07 сентября 2025',
+//     image: news2Image,
+//   },
+//   {
+//     id: 3,
+//     title: 'Открыта вакансия',
+//     date: '12 июля 2025',
+//     image: news3Image,
+//   },
+//   {
+//     id: 4,
+//     title: 'Акция 1 + 1',
+//     date: '7 мая 2025',
+//     image: news4Image,
+//   },
+// ]
+
+const { newsList } = useNews({ limit: 4, server: true })
+
+const news = computed(() =>
+  (newsList.value ?? []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    date: item.published_at
+      ? new Date(item.published_at).toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : '',
+    image: item.image_webp_url || item.image_url || item.image_variants?.card,
+  }))
+)
 
 const isVisible = ref(false)
 const sectionRef = ref(null)
 
 let sectionObserver = null
-
-const news = [
-  {
-    id: 1,
-    title: 'Афиша на ноябрь',
-    date: '01 ноября 2025',
-    image: news1Image,
-  },
-  {
-    id: 2,
-    title: 'Открыта бронь на квадротур до Чермоза',
-    date: '07 сентября 2025',
-    image: news2Image,
-  },
-  {
-    id: 3,
-    title: 'Открыта вакансия',
-    date: '12 июля 2025',
-    image: news3Image,
-  },
-  {
-    id: 4,
-    title: 'Акция 1 + 1',
-    date: '7 мая 2025',
-    image: news4Image,
-  },
-]
 
 onMounted(() => {
   let revealRaf = null
@@ -74,25 +92,27 @@ onBeforeUnmount(() => {
         >
           Новости
         </h3>
-        <button
+        <NuxtLink
+          to="/news"
           class="rounded-md border border-primary bg-transparent px-4 py-2 text-primary transition-[opacity,transform,background-color,color,border-color] duration-1000 hover:bg-primary hover:text-primary-foreground"
           :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
         >
           Все новости
-        </button>
+        </NuxtLink>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div
+      <div v-if="news.length" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <NuxtLink
           v-for="(item, index) in news"
           :key="item.id"
+          :to="`/news/${item.id}`"
           class="group cursor-pointer overflow-hidden rounded-lg border-none bg-card transition-[opacity,transform,box-shadow] duration-700 hover:scale-105 hover:shadow-xl"
           :class="isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
           :style="{
             transitionDelay: isVisible ? `${200 + index * 100}ms` : '0ms',
           }"
         >
-          <div class="aspect-[4/3] overflow-hidden">
+          <div v-if="item.image" class="aspect-[4/3] overflow-hidden">
             <img
               :src="item.image"
               :alt="item.title"
@@ -105,9 +125,8 @@ onBeforeUnmount(() => {
               {{ item.title }}
             </h4>
           </div>
-        </div>
+        </NuxtLink>
       </div>
     </div>
   </section>
 </template>
-

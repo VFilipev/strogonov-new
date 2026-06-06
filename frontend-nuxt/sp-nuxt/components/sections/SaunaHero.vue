@@ -3,16 +3,21 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ChevronDown, Menu, Phone, X } from "lucide-vue-next";
 import logo from "~/assets/resort/logo.webp";
 import nac from "~/assets/resort/nac.webp";
-import heroImage from "~/assets/resort/preview.webp";
+import heroImage from "~/assets/resort/sauna-hero.jpeg";
+import { BOOKING_URL } from "~/utils/booking";
 
 const props = defineProps({
   title: {
     type: String,
-    default: "Снегоходные маршруты",
+    default: "Пар, тишина и тепло природы",
   },
   intro: {
     type: String,
     default: "",
+  },
+  ctaHref: {
+    type: String,
+    default: "#complexes",
   },
 });
 
@@ -118,13 +123,11 @@ onBeforeUnmount(() => {
         <div
           class="hero-bg absolute inset-0"
           role="img"
-          aria-label="Снегоход на зимнем маршруте, Строгановские Просторы"
+          aria-label="Банный комплекс Строгановские Просторы"
           :style="heroBackgroundStyle"
         />
       </div>
-      <div
-        class="absolute inset-0 bg-gradient-to-b from-primary/75 via-primary/55 to-primary/75"
-      />
+      <div class="absolute inset-0 bg-gradient-to-b from-primary/75 via-primary/55 to-primary/75" />
     </div>
 
     <nav class="animate-fade-in absolute left-0 right-0 top-0 z-20 p-4 md:p-8">
@@ -165,7 +168,7 @@ onBeforeUnmount(() => {
             >
             <NuxtLink
               v-if="showToursNav"
-              class="font-semibold text-primary-foreground underline decoration-primary-foreground/50 underline-offset-4"
+              class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
               to="/tours"
               >туры</NuxtLink
             >
@@ -174,10 +177,10 @@ onBeforeUnmount(() => {
               href="/event-calculator"
               >афиша и мероприятия</a
             >
-            <a
-              class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              href="/sauna"
-              >спа и баня</a
+            <NuxtLink
+              class="font-semibold text-primary-foreground underline decoration-primary-foreground/50 underline-offset-4"
+              to="/sauna"
+              >спа и баня</NuxtLink
             >
             <NuxtLink
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
@@ -194,7 +197,9 @@ onBeforeUnmount(() => {
             <Phone class="h-5 w-5" />
           </a>
           <a
-            href="#request"
+            :href="BOOKING_URL"
+            target="_blank"
+            rel="noopener noreferrer"
             class="rounded-full border border-primary-foreground bg-transparent px-6 py-2 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-all duration-300 hover:scale-105 hover:bg-primary-foreground hover:text-primary"
           >
             забронировать
@@ -232,7 +237,7 @@ onBeforeUnmount(() => {
           >
           <NuxtLink
             v-if="showToursNav"
-            class="font-semibold"
+            class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
             to="/tours"
             @click="closeMobileMenu"
             >туры</NuxtLink
@@ -242,6 +247,12 @@ onBeforeUnmount(() => {
             href="/event-calculator"
             @click="closeMobileMenu"
             >мероприятия</a
+          >
+          <NuxtLink
+            class="font-semibold"
+            to="/sauna"
+            @click="closeMobileMenu"
+            >спа и баня</NuxtLink
           >
           <NuxtLink
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
@@ -272,9 +283,7 @@ onBeforeUnmount(() => {
               animation-fill-mode: forwards;
             "
           >
-            <h1
-              class="text-2xl font-light leading-relaxed text-primary-foreground md:text-3xl lg:text-4xl"
-            >
+            <h1 class="text-2xl font-light leading-relaxed text-primary-foreground md:text-3xl lg:text-4xl">
               {{ title }}
             </h1>
           </div>
@@ -294,7 +303,9 @@ onBeforeUnmount(() => {
         </div>
         <div class="mt-6 flex justify-center md:hidden">
           <a
-            href="#request"
+            :href="BOOKING_URL"
+            target="_blank"
+            rel="noopener noreferrer"
             class="rounded-full border border-primary-foreground bg-primary-foreground/10 px-8 py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground backdrop-blur-sm transition-all duration-300 hover:bg-primary-foreground hover:text-primary"
           >
             забронировать

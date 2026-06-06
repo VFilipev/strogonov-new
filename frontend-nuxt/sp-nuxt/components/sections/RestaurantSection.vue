@@ -1,13 +1,16 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Coffee, Sun, Moon } from "lucide-vue-next";
+import PhotoViewer from "~/components/lodge/PhotoViewer.vue";
 import rest1Image from "~/assets/resort/rest1.webp";
 import rest2Image from "~/assets/resort/rest2.webp";
 import rest3Image from "~/assets/resort/rest3.webp";
+import { restaurantMenuImages } from "~/utils/restaurantMenuImages";
 
 const isVisible = ref(false);
 const activeIndex = ref(0);
 const activeMeal = ref(null);
+const menuGalleryOpen = ref(false);
 const sectionRef = ref(null);
 const containerRef = ref(null);
 
@@ -89,10 +92,18 @@ onBeforeUnmount(() => {
     sectionObserver = null;
   }
 });
+
+function openMenuGallery() {
+  menuGalleryOpen.value = true;
+}
+
+function closeMenuGallery() {
+  menuGalleryOpen.value = false;
+}
 </script>
 
 <template>
-  <section ref="sectionRef" class="bg-background py-16 md:py-24">
+  <section id="restaurant" ref="sectionRef" class="bg-background py-16 md:py-24">
     <div class="container mx-auto px-4">
       <!-- Main Content -->
       <div
@@ -199,7 +210,9 @@ onBeforeUnmount(() => {
           <!-- Action Buttons -->
           <div class="flex flex-wrap gap-4">
             <button
+              type="button"
               class="rounded-xl bg-primary px-8 py-3 text-primary-foreground transition-colors hover:bg-primary/90"
+              @click="openMenuGallery"
             >
               Посмотреть меню
             </button>
@@ -212,5 +225,12 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
+
+    <PhotoViewer
+      :open="menuGalleryOpen"
+      :images="restaurantMenuImages"
+      :initial-index="0"
+      @close="closeMenuGallery"
+    />
   </section>
 </template>

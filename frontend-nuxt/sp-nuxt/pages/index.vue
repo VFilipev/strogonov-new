@@ -11,6 +11,9 @@ const {
 
 const { data: siteSettings } = useSiteSettings();
 const siteIsActive = computed(() => siteSettings.value?.site_active !== false);
+const showNewsOnHomepage = computed(
+  () => siteSettings.value?.homepage_show_news !== false,
+);
 
 const config = useRuntimeConfig();
 const siteUrl = config.public.siteUrl;
@@ -166,7 +169,8 @@ onMounted(() => {
         <LazyActiveRestSection />
         <LazyEventsSection />
         <LazyRestaurantSection />
-        <LazyNewsSection />
+        <LazyNewsSection v-if="showNewsOnHomepage" />
+        <LazyGuestReviewsSection />
         <template #fallback>
           <div
             class="min-h-[min(200vh,3000px)] bg-background"
@@ -177,6 +181,10 @@ onMounted(() => {
     </template>
 
     <SiteMaintenanceSection v-else />
+
+    <ClientOnly>
+      <ScrollToTopButton />
+    </ClientOnly>
 
     <FooterSection />
   </div>

@@ -35,7 +35,7 @@ const {
 </script>
 
 <template>
-  <section class="house_typ h-[100vh] box-border pt-[52px]" data-section="modular">
+  <section class="house_typ modular-house-section box-border pt-[52px]" data-section="modular">
     <div class="container">
       <div class="row">
         <div class="col-12 col-sm-6">
@@ -67,8 +67,8 @@ const {
       <div class="card_house__wrapper">
         <Transition name="fade" mode="out-in">
           <div v-if="selectedHouse" :key="selectedHouse.id" class="card_house">
-            <div class="row">
-              <div class="col-12 col-sm-6">
+            <div class="row card_house__main-row">
+              <div class="col-12 col-sm-6 card_house__col card_house__col--info">
                 <div class="row d-none d-sm-flex" style="margin-bottom: 64px">
                   <div class="col-12">
                     <div class="house__name_description">Стоимость</div>
@@ -124,8 +124,8 @@ const {
                   </div>
                 </div>
 
-                <div class="row" style="margin-top: 31px">
-                  <div class="col-6">
+                <div class="row card_house__booking-row" style="margin-top: 31px">
+                  <div class="col-6 card_house__booking-col">
                     <a
                       v-if="selectedHouse.bronirui_online_url"
                       :href="selectedHouse.bronirui_online_url"
@@ -145,7 +145,7 @@ const {
                 </div>
               </div>
 
-              <div class="col-12 col-sm-6">
+              <div class="col-12 col-sm-6 card_house__col card_house__col--photos">
                 <div class="row">
                   <div class="col-12">
                     <div
@@ -398,9 +398,16 @@ const {
   background-color: #f5f3f1;
 }
 
+.modular-house-section {
+  min-height: 100vh;
+}
+
 a.toBooking,
 button.toBooking {
   display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
   text-decoration: none;
   text-align: center;
   font: inherit;
@@ -410,6 +417,7 @@ button.toBooking {
   padding: 10px 15px;
   border-radius: 35px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 button.toBooking--disabled {
@@ -552,6 +560,28 @@ button.toBooking--disabled {
 
   .row_swiper {
     display: none;
+  }
+
+  .card_house__main-row {
+    flex-direction: column;
+  }
+
+  .card_house__col--photos {
+    order: 1;
+  }
+
+  .card_house__col--info {
+    order: 2;
+  }
+
+  .card_house__booking-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .card_house__col--info .house__text_description {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .house__image_hint {

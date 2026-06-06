@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { normalizeListResponse } from "~/utils/api";
+import { normalizeListResponse } from "~/utils/apiHelpers";
 
 export function useNormalizedAsyncList(key, fetcher, options = {}) {
   const { normalize = normalizeListResponse, ...asyncOptions } = options;

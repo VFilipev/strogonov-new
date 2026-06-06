@@ -1,26 +1,17 @@
 <script setup>
-import forestWalkImage from '~/assets/resort/peaceful-forest-walk.webp'
-import windowViewImage from '~/assets/resort/peaceful-window-view.webp'
-import banyaImage from '~/assets/resort/peaceful-banya.webp'
-
-const FALLBACK = [
-  { image: forestWalkImage, title: 'Прогулки по лесу', description: 'Хвойный лес и живописные тропы' },
-  { image: windowViewImage, title: 'Тишина и уединение', description: 'Отключитесь от городской суеты' },
-  { image: banyaImage, title: 'Традиционная баня', description: 'Русская баня с чаном' },
-]
+import { NuxtLink } from '#components'
 
 const { activities: apiList } = useActivities('peaceful')
 
-const activities = computed(() => {
-  const list = apiList.value
-  if (!list.length) return FALLBACK
-  return list.map((a) => ({
+const activities = computed(() =>
+  (apiList.value ?? []).map((a) => ({
     id: a.id,
     image: a.image_webp_url || a.image_url,
     title: a.title,
     description: a.description,
+    to: a.page_path?.trim() || null,
   }))
-})
+)
 </script>
 
 <template>
@@ -34,10 +25,13 @@ const activities = computed(() => {
       </div>
 
       <div class="grid gap-6 md:grid-cols-3">
-        <div
+        <component
+          :is="activity.to ? NuxtLink : 'div'"
           v-for="(activity, index) in activities"
           :key="activity.id ?? activity.title"
-          class="group relative overflow-hidden rounded-2xl border border-border/50 bg-white/70 transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in"
+          v-bind="activity.to ? { to: activity.to } : {}"
+          class="group relative overflow-hidden rounded-2xl border border-border/50 bg-white/70 transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          :class="{ 'cursor-pointer': activity.to }"
           :style="{ animationDelay: `${index * 150}ms` }"
         >
           <div class="relative h-[400px] overflow-hidden">
@@ -61,7 +55,7 @@ const activities = computed(() => {
               </p>
             </div>
           </div>
-        </div>
+        </component>
       </div>
     </div>
   </section>

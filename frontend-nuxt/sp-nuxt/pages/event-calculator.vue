@@ -3,6 +3,8 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useHead } from '#imports'
 import FooterSection from '~/components/sections/FooterSection.vue'
 import SiteHeaderNavigation from '~/components/sections/SiteHeaderNavigation.vue'
+import { EventCalculatorRequestsApi } from '~/utils/api'
+import { normalizeListResponse, toURLParams } from '~/utils/apiHelpers'
 import {
   Calendar as CalendarIcon,
   Home,
@@ -18,10 +20,7 @@ import {
   ChevronRight,
 } from 'lucide-vue-next'
 
-import cottageImage from '~/assets/resort/cottage-exterior.jpg'
-import cottageInterior from '~/assets/resort/cottage-interior.jpg'
-import modularImage from '~/assets/resort/modular-house.jpg'
-import banyaImage from '~/assets/resort/banya-exterior.jpg'
+import cottageFallbackImage from '~/assets/resort/cottage-exterior.jpg'
 import event1Image from '~/assets/resort/event1.webp'
 import event2Image from '~/assets/resort/event2.webp'
 import event3Image from '~/assets/resort/event3.webp'
@@ -58,86 +57,194 @@ const eventTypes = [
   },
 ]
 
-const cottages = [
-  {
-    id: 'cottage-1',
-    name: 'Дом Кузнеца',
-    description: '2 смежные и 2 изолированные спальни, просторная кухня-гостиная',
-    capacityNum: 11,
-    area: 120,
-    pricePerNight: 10000,
-    images: [cottageImage, cottageInterior, banyaImage],
-  },
-  {
-    id: 'cottage-2',
-    name: 'Дом Лесника',
-    description: '3 изолированные спальни, большая терраса с видом на лес',
-    capacityNum: 8,
-    area: 95,
-    pricePerNight: 8500,
-    images: [cottageImage, cottageInterior, banyaImage],
-  },
-  {
-    id: 'cottage-3',
-    name: 'Дом Охотника',
-    description: '2 спальни, уютная гостиная с камином, мангальная зона',
-    capacityNum: 6,
-    area: 75,
-    pricePerNight: 6500,
-    images: [cottageImage, cottageInterior, banyaImage],
-  },
-]
+const isModularType = (type) => {
+  if (!type) return false
+  return type.slug === 'modulnye-doma' || String(type.name || '').toLowerCase().includes('модульн')
+}
 
-const modularHouses = [
-  {
-    id: 'modular-1',
-    name: 'Модуль Панорама',
-    description: 'Панорамные окна с видом на реку, современный интерьер',
-    capacityNum: 2,
-    area: 25,
-    pricePerNight: 4500,
-    images: [modularImage, cottageInterior, banyaImage],
+const mapLodgeToCalculatorHouse = (lodge) => {
+  const images = (lodge.images ?? [])
+    .map((img) => img.image_webp_url || img.image_url || img.image_variants?.card)
+    .filter(Boolean)
+  if (images.length === 0) images.push(cottageFallbackImage)
+  return {
+    id: lodge.id,
+    name: lodge.name,
+    description: lodge.short_description || '',
+    capacityNum: lodge.capacity ?? 0,
+    area: parseFloat(lodge.area) || 0,
+    pricePerNight: parseFloat(lodge.price_from) || 0,
+    images,
+  }
+}
+
+const config = useRuntimeConfig()
+
+const lodgeApiUrl = (relPath) => {
+  const base = String(config.public.apiBase ?? '').replace(/\/$/, '')
+  const trimmed = String(relPath).replace(/^\/+/, '').replace(/\/?$/, '')
+  return `${base}/${trimmed}/`
+}
+
+const lodgeApiGet = (relPath, params = {}) => {
+  const url = lodgeApiUrl(relPath)
+  const query = toURLParams(params)
+  return query ? $fetch(`${url}?${query}`) : $fetch(url)
+}
+
+const { data: lodgeTypesData } = await useAsyncData('event-calculator-lodge-types', () =>
+  lodgeApiGet('lodges/types', { compact: 1 }),
+)
+
+const lodgeTypes = computed(() => normalizeListResponse(lodgeTypesData.value))
+const cottageType = computed(() => lodgeTypes.value.find((t) => !isModularType(t)))
+const modularType = computed(() => lodgeTypes.value.find((t) => isModularType(t)))
+
+const cottageCategories = ref([])
+const modularCategories = ref([])
+const cottageCategoryId = ref(null)
+const modularCategoryId = ref(null)
+
+const cottageLodges = ref([])
+const modularLodges = ref([])
+const loadingCottageLodges = ref(false)
+const loadingModularLodges = ref(false)
+
+watch(
+  cottageType,
+  async (t) => {
+    cottageCategories.value = []
+    cottageCategoryId.value = null
+    cottageLodges.value = []
+    if (!t?.id) return
+    const data = await lodgeApiGet('lodges/categories', { lodge_type: t.id })
+    const list = normalizeListResponse(data)
+    cottageCategories.value = list
+    if (list.length) cottageCategoryId.value = list[0].id
   },
-  {
-    id: 'modular-2',
-    name: 'Модуль Комфорт',
-    description: 'Увеличенная площадь, дополнительная спальная зона',
-    capacityNum: 4,
-    area: 35,
-    pricePerNight: 5500,
-    images: [modularImage, cottageInterior, banyaImage],
+  { immediate: true },
+)
+
+watch(
+  modularType,
+  async (t) => {
+    modularCategories.value = []
+    modularCategoryId.value = null
+    modularLodges.value = []
+    if (!t?.id) return
+    const data = await lodgeApiGet('lodges/categories', { lodge_type: t.id })
+    const list = normalizeListResponse(data)
+    modularCategories.value = list
+    if (list.length) modularCategoryId.value = list[0].id
   },
-  {
-    id: 'modular-3',
-    name: 'Модуль Премиум',
-    description: 'Максимальный комфорт, джакузи, камин',
-    capacityNum: 4,
-    area: 40,
-    pricePerNight: 7500,
-    images: [modularImage, cottageInterior, banyaImage],
+  { immediate: true },
+)
+
+watch(
+  [cottageType, cottageCategoryId],
+  async () => {
+    const t = cottageType.value
+    if (!t?.id) {
+      cottageLodges.value = []
+      return
+    }
+    loadingCottageLodges.value = true
+    try {
+      const filter = { lodge_type: t.id }
+      if (cottageCategoryId.value) filter.category = cottageCategoryId.value
+      const data = await lodgeApiGet('lodges', filter)
+      cottageLodges.value = normalizeListResponse(data).map(mapLodgeToCalculatorHouse)
+    } finally {
+      loadingCottageLodges.value = false
+    }
   },
-]
+  { immediate: true },
+)
+
+watch(
+  [modularType, modularCategoryId],
+  async () => {
+    const t = modularType.value
+    if (!t?.id) {
+      modularLodges.value = []
+      return
+    }
+    loadingModularLodges.value = true
+    try {
+      const filter = { lodge_type: t.id }
+      if (modularCategoryId.value) filter.category = modularCategoryId.value
+      const data = await lodgeApiGet('lodges', filter)
+      modularLodges.value = normalizeListResponse(data).map(mapLodgeToCalculatorHouse)
+    } finally {
+      loadingModularLodges.value = false
+    }
+  },
+  { immediate: true },
+)
+
+const accommodationType = ref('cottages')
+const housesVisibleLimit = ref(4)
+
+const cottages = computed(() => cottageLodges.value)
+const modularHouses = computed(() => modularLodges.value)
+
+const currentCategories = computed(() =>
+  accommodationType.value === 'cottages' ? cottageCategories.value : modularCategories.value,
+)
+
+const accommodationCategoryId = computed({
+  get() {
+    return accommodationType.value === 'cottages' ? cottageCategoryId.value : modularCategoryId.value
+  },
+  set(v) {
+    if (accommodationType.value === 'cottages') cottageCategoryId.value = v
+    else modularCategoryId.value = v
+  },
+})
+
+const currentHousesFull = computed(() =>
+  accommodationType.value === 'cottages' ? cottages.value : modularHouses.value,
+)
+
+const displayedHouses = computed(() =>
+  currentHousesFull.value.slice(0, housesVisibleLimit.value),
+)
+
+const hasMoreHouses = computed(() => housesVisibleLimit.value < currentHousesFull.value.length)
+
+const isLoadingDisplayedHouses = computed(() =>
+  accommodationType.value === 'cottages' ? loadingCottageLodges.value : loadingModularLodges.value,
+)
+
+const showMoreHouses = () => {
+  housesVisibleLimit.value = Math.min(
+    housesVisibleLimit.value + 4,
+    currentHousesFull.value.length,
+  )
+}
+
+watch([accommodationType, cottageCategoryId, modularCategoryId], () => {
+  housesVisibleLimit.value = 4
+})
 
 const pricing = {
   venueBase: 25000,
-  guestPrice: 3500,
   cateringOptions: {
     basic: { name: 'Базовое меню', price: 2500 },
     premium: { name: 'Премиум меню', price: 4500 },
     luxury: { name: 'Люкс меню', price: 7000 },
   },
   entertainment: {
-    dj: { name: 'DJ и звук', price: 15000 },
-    band: { name: 'Живая музыка', price: 35000 },
-    host: { name: 'Ведущий', price: 20000 },
-    photo: { name: 'Фотограф', price: 25000 },
-    video: { name: 'Видеограф', price: 30000 },
+    dj: { name: 'Диджей', price: 25000 },
+    band: { name: 'Живая музыка', price: 25000 },
+    coordinator: { name: 'Координатор', price: 25000 },
+    host: { name: 'Ведущий', price: 35000 },
+    photo: { name: 'Фотограф', price: 40000 },
+    video: { name: 'Видеограф', price: 15000 },
+    choreographer: { name: 'Хореограф', price: 8500 },
   },
   additional: {
-    decoration: { name: 'Декор и оформление', price: 15000 },
-    flowers: { name: 'Цветочные композиции', price: 12000 },
-    fireworks: { name: 'Салют и пиротехника', price: 25000 },
-    transfer: { name: 'Трансфер гостей', price: 8000 },
+    decoration: { name: 'Декор и оформление', price: 35000 },
   },
 }
 
@@ -158,10 +265,13 @@ const contactEmail = ref('')
 const checkInDate = ref('')
 const checkOutDate = ref('')
 const selectedHouses = ref([])
-const accommodationType = ref('cottages') // 'cottages' или 'modular'
 const photoModalOpen = ref(false)
 const activeHousePhotos = ref(null)
 const currentPhotoIndex = ref(0)
+const isSubmitting = ref(false)
+const submitError = ref('')
+const consentAccepted = ref(false)
+const successModalOpen = ref(false)
 
 const nightsCount = computed(() => {
   if (!checkInDate.value || !checkOutDate.value) return 0
@@ -171,30 +281,29 @@ const nightsCount = computed(() => {
   return Math.floor(diff / 86_400_000)
 })
 
-const allHouses = [...cottages, ...modularHouses]
+const allHouses = computed(() => [...cottages.value, ...modularHouses.value])
 
-const displayedHouses = computed(() => {
-  return accommodationType.value === 'cottages' ? cottages : modularHouses
-})
+const idsMatch = (a, b) => String(a) === String(b)
 
-const selectedCottagesCount = computed(() => {
-  return selectedHouses.value.filter(id => cottages.some(c => c.id === id)).length
-})
+const selectedCottagesCount = computed(() =>
+  selectedHouses.value.filter((id) => cottages.value.some((c) => idsMatch(c.id, id))).length,
+)
 
-const selectedModularCount = computed(() => {
-  return selectedHouses.value.filter(id => modularHouses.some(m => m.id === id)).length
-})
+const selectedModularCount = computed(() =>
+  selectedHouses.value.filter((id) => modularHouses.value.some((m) => idsMatch(m.id, id))).length,
+)
 
 const accommodationTotal = computed(() =>
   selectedHouses.value.reduce((sum, houseId) => {
-    const house = allHouses.find((h) => h.id === houseId)
+    const house = allHouses.value.find((h) => idsMatch(h.id, houseId))
     return sum + (house ? house.pricePerNight * nightsCount.value : 0)
   }, 0),
 )
 
 const total = computed(() => {
+  if (!selectedEvent.value) return null
+
   let totalValue = pricing.venueBase
-  totalValue += guestCount.value * pricing.guestPrice
 
   if (catering.value && pricing.cateringOptions[catering.value]) {
     totalValue += guestCount.value * pricing.cateringOptions[catering.value].price
@@ -215,6 +324,22 @@ const total = computed(() => {
   totalValue += accommodationTotal.value
   return totalValue
 })
+
+const selectedEventTitle = computed(() =>
+  eventTypes.find((event) => event.id === selectedEvent.value)?.title || '',
+)
+
+const selectedCottages = computed(() =>
+  selectedHouses.value
+    .map((id) => cottages.value.find((house) => idsMatch(house.id, id)))
+    .filter(Boolean),
+)
+
+const selectedModularHouses = computed(() =>
+  selectedHouses.value
+    .map((id) => modularHouses.value.find((house) => idsMatch(house.id, id)))
+    .filter(Boolean),
+)
 
 const formatPrice = (price) => new Intl.NumberFormat('ru-RU').format(price)
 
@@ -239,9 +364,11 @@ const toggleAdditional = (id) => {
     : [...additional.value, id]
 }
 
+const houseIsSelected = (id) => selectedHouses.value.some((h) => idsMatch(h, id))
+
 const toggleHouse = (id) => {
-  selectedHouses.value = selectedHouses.value.includes(id)
-    ? selectedHouses.value.filter((h) => h !== id)
+  selectedHouses.value = houseIsSelected(id)
+    ? selectedHouses.value.filter((h) => !idsMatch(h, id))
     : [...selectedHouses.value, id]
 }
 
@@ -254,6 +381,132 @@ const openPhotoModal = (house) => {
 const closeModal = () => {
   photoModalOpen.value = false
   activeHousePhotos.value = null
+}
+
+const mapHouseForPayload = (house) => ({
+  id: house.id,
+  name: house.name,
+  capacity: house.capacityNum,
+  area_m2: house.area,
+  price_per_night: house.pricePerNight,
+  nights: nightsCount.value,
+  line_total: house.pricePerNight * nightsCount.value,
+})
+
+const resetForm = () => {
+  selectedEvent.value = null
+  guestCount.value = 50
+  eventDate.value = ''
+  checkInDate.value = ''
+  checkOutDate.value = ''
+  selectedHouses.value = []
+  accommodationType.value = 'cottages'
+  catering.value = 'premium'
+  entertainment.value = []
+  additional.value = []
+  contactName.value = ''
+  contactPhone.value = ''
+  contactEmail.value = ''
+  submitError.value = ''
+  consentAccepted.value = false
+}
+
+const closeSuccessModal = () => {
+  successModalOpen.value = false
+  resetForm()
+}
+
+const submitCalculatorRequest = async () => {
+  submitError.value = ''
+
+  if (!consentAccepted.value) return
+
+  if (!contactName.value.trim()) {
+    submitError.value = 'Укажите имя для обратной связи.'
+    return
+  }
+
+  const phoneDigits = (contactPhone.value || '').replace(/\D/g, '')
+  if (!contactEmail.value.trim() && phoneDigits.length < 10) {
+    submitError.value = 'Укажите телефон или email для связи.'
+    return
+  }
+
+  const payload = {
+    schema_version: 'v1',
+    contact: {
+      name: contactName.value.trim(),
+      phone: contactPhone.value.trim(),
+      email: contactEmail.value.trim(),
+    },
+    event: {
+      type: {
+        id: selectedEvent.value,
+        title: selectedEventTitle.value,
+      },
+      date: eventDate.value || null,
+      guest_count: guestCount.value,
+    },
+    accommodation: {
+      check_in: checkInDate.value || null,
+      check_out: checkOutDate.value || null,
+      nights: nightsCount.value,
+      groups: {
+        cottages: selectedCottages.value.map(mapHouseForPayload),
+        modular: selectedModularHouses.value.map(mapHouseForPayload),
+      },
+      subtotal: accommodationTotal.value,
+    },
+    catering: {
+      selected: catering.value,
+      label: pricing.cateringOptions[catering.value]?.name || '',
+      price_per_guest: pricing.cateringOptions[catering.value]?.price || 0,
+      guest_count: guestCount.value,
+      subtotal: (pricing.cateringOptions[catering.value]?.price || 0) * guestCount.value,
+    },
+    entertainment: entertainment.value.map((id) => ({
+      id,
+      label: pricing.entertainment[id]?.name || id,
+      price: pricing.entertainment[id]?.price || 0,
+    })),
+    additional_services: additional.value.map((id) => ({
+      id,
+      label: pricing.additional[id]?.name || id,
+      price: pricing.additional[id]?.price || 0,
+    })),
+    pricing_snapshot: {
+      currency: 'RUB',
+      venue_base: pricing.venueBase,
+      accommodation_subtotal: accommodationTotal.value,
+      entertainment_subtotal: entertainment.value.reduce(
+        (sum, id) => sum + (pricing.entertainment[id]?.price || 0),
+        0,
+      ),
+      additional_subtotal: additional.value.reduce(
+        (sum, id) => sum + (pricing.additional[id]?.price || 0),
+        0,
+      ),
+      catering_subtotal: (pricing.cateringOptions[catering.value]?.price || 0) * guestCount.value,
+      estimated_total: total.value || 0,
+    },
+  }
+
+  isSubmitting.value = true
+  try {
+    await EventCalculatorRequestsApi.save({
+      contact_name: contactName.value.trim(),
+      contact_phone: contactPhone.value.trim(),
+      contact_email: contactEmail.value.trim(),
+      event_type: selectedEventTitle.value,
+      payload,
+    })
+    successModalOpen.value = true
+  } catch (error) {
+    submitError.value = 'Не удалось отправить заявку. Попробуйте ещё раз.'
+    console.error('Failed to submit event calculator request:', error)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const nextPhoto = () => {
@@ -279,10 +532,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  document.body.style.overflow = ''
 })
 
-watch(photoModalOpen, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
+watch([photoModalOpen, successModalOpen], ([photoOpen, successOpen]) => {
+  document.body.style.overflow = photoOpen || successOpen ? 'hidden' : ''
 })
 
 useHead({
@@ -371,10 +625,7 @@ useHead({
     <!-- Калькулятор -->
     <section id="calculator" class="px-6 py-20">
       <div class="container mx-auto max-w-5xl">
-        <div
-          class="mb-12 text-center transition-all duration-700"
-          :class="selectedEvent ? 'translate-y-0 opacity-100' : 'opacity-50'"
-        >
+        <div class="mb-12 text-center">
           <h2 class="mb-4 text-2xl font-light text-foreground md:text-4xl">Рассчитайте стоимость вашего мероприятия</h2>
           <p class="text-muted-foreground">Выберите опции и получите предварительный расчёт</p>
         </div>
@@ -528,39 +779,73 @@ useHead({
                 </button>
               </div>
 
+              <div v-if="currentCategories.length > 1" class="mt-4 space-y-2">
+                <label class="text-sm font-medium text-foreground">Категория</label>
+                <select
+                  v-model="accommodationCategoryId"
+                  class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                >
+                  <option v-for="cat in currentCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                </select>
+              </div>
+
               <div class="mt-4 space-y-3">
                 <div
-                  v-for="house in displayedHouses"
-                  :key="house.id"
-                  class="flex cursor-pointer gap-4 rounded-xl border-2 p-3 transition-all duration-300"
-                  :class="selectedHouses.includes(house.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'"
-                  @click="toggleHouse(house.id)"
+                  v-if="isLoadingDisplayedHouses"
+                  class="rounded-lg bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground"
                 >
+                  Загрузка…
+                </div>
+                <p
+                  v-else-if="!currentHousesFull.length"
+                  class="rounded-lg border border-border/60 px-4 py-6 text-center text-sm text-muted-foreground"
+                >
+                  Дома в этой категории пока не найдены
+                </p>
+                <template v-else>
                   <div
-                    class="relative h-24 w-24 shrink-0 cursor-zoom-in overflow-hidden rounded-lg"
-                    @click.stop="openPhotoModal(house)"
+                    v-for="house in displayedHouses"
+                    :key="house.id"
+                    class="flex cursor-pointer gap-4 rounded-xl border-2 p-3 transition-all duration-300"
+                    :class="houseIsSelected(house.id) ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'"
+                    @click="toggleHouse(house.id)"
                   >
-                    <img :src="house.images[0]" :alt="house.name" class="h-full w-full object-cover transition-transform duration-300 hover:scale-110" />
-                    <div v-if="house.images.length > 1" class="absolute bottom-1 right-1 rounded bg-background/80 px-1.5 py-0.5 text-xs">
-                      +{{ house.images.length - 1 }}
+                    <div
+                      class="relative h-24 w-24 shrink-0 cursor-zoom-in overflow-hidden rounded-lg"
+                      @click.stop="openPhotoModal(house)"
+                    >
+                      <img :src="house.images[0]" :alt="house.name" class="h-full w-full object-cover transition-transform duration-300 hover:scale-110" />
+                      <div v-if="house.images.length > 1" class="absolute bottom-1 right-1 rounded bg-background/80 px-1.5 py-0.5 text-xs">
+                        +{{ house.images.length - 1 }}
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-start justify-between gap-2">
-                      <h4 class="truncate font-medium text-foreground">{{ house.name }}</h4>
-                      <input type="checkbox" class="h-4 w-4" :checked="selectedHouses.includes(house.id)" @click.stop="toggleHouse(house.id)" />
-                    </div>
-                    <div class="mt-1 flex items-center gap-1.5 text-primary font-medium">
-                      <Users class="h-4 w-4" />
-                      <span>до {{ house.capacityNum }} чел</span>
-                    </div>
-                    <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{{ house.description }}</p>
-                    <div class="mt-2 flex items-center justify-between">
-                      <span class="text-sm font-medium text-foreground">{{ house.pricePerNight.toLocaleString() }} ₽/сутки</span>
-                      <span class="text-xs text-muted-foreground">{{ house.area }} м²</span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-start justify-between gap-2">
+                        <h4 class="truncate font-medium text-foreground">{{ house.name }}</h4>
+                        <input type="checkbox" class="h-4 w-4" :checked="houseIsSelected(house.id)" @click.stop="toggleHouse(house.id)" />
+                      </div>
+                      <div class="mt-1 flex items-center gap-1.5 font-medium text-primary">
+                        <Users class="h-4 w-4" />
+                        <span>до {{ house.capacityNum }} чел</span>
+                      </div>
+                      <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{{ house.description }}</p>
+                      <div class="mt-2 flex items-center justify-between">
+                        <span class="text-sm font-medium text-foreground">от {{ formatPrice(house.pricePerNight) }} ₽/сутки</span>
+                        <span class="text-xs text-muted-foreground">{{ house.area }} м²</span>
+                      </div>
                     </div>
                   </div>
+                </template>
+
+                <div v-if="hasMoreHouses && !isLoadingDisplayedHouses" class="flex justify-center pt-1">
+                  <button
+                    type="button"
+                    class="rounded-lg border border-primary bg-transparent px-6 py-2 text-sm font-medium text-primary transition hover:bg-primary/10"
+                    @click="showMoreHouses"
+                  >
+                    Показать ещё
+                  </button>
                 </div>
               </div>
             </div>
@@ -666,7 +951,15 @@ useHead({
 
             <div class="rounded-2xl bg-primary p-6 text-center md:p-8">
               <p class="mb-2 text-primary-foreground/80">Предварительная стоимость</p>
-              <p class="mb-4 text-4xl font-light text-primary-foreground md:text-5xl">{{ formatPrice(total) }} ₽</p>
+              <p
+                v-if="total !== null"
+                class="mb-4 text-4xl font-light text-primary-foreground md:text-5xl"
+              >
+                {{ formatPrice(total) }} ₽
+              </p>
+              <p v-else class="mb-4 text-xl font-light text-primary-foreground/90 md:text-2xl">
+                Укажите тип мероприятия в шаге 1
+              </p>
               <p class="text-sm text-primary-foreground/60">
                 Окончательная стоимость будет рассчитана менеджером с учётом всех деталей
               </p>
@@ -709,17 +1002,72 @@ useHead({
                 </div>
               </div>
 
+              <div class="flex gap-3 text-center md:text-left">
+                <input
+                  id="event-calculator-consent"
+                  v-model="consentAccepted"
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 shrink-0 rounded border border-input text-primary accent-primary"
+                />
+                <label for="event-calculator-consent" class="text-xs leading-relaxed text-muted-foreground">
+                  Я даю
+                  <NuxtLink
+                    href="/consent.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary underline underline-offset-2 hover:text-primary/90"
+                    >согласие</NuxtLink>
+                  на
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary underline underline-offset-2 hover:text-primary/90"
+                    >обработку персональных данных</a>.
+                </label>
+              </div>
+
               <button
-                class="mx-auto flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-center text-base font-medium text-primary-foreground transition hover:bg-primary/90 md:w-auto"
+                type="button"
+                class="mx-auto flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-center text-base font-medium text-primary-foreground transition hover:bg-primary/90 md:w-auto disabled:pointer-events-none disabled:opacity-60"
+                :disabled="isSubmitting || !consentAccepted"
+                @click="submitCalculatorRequest"
               >
                 <Send class="h-4 w-4" />
-                Отправить заявку
+                {{ isSubmitting ? 'Отправка...' : 'Отправить заявку' }}
               </button>
+              <p v-if="submitError" class="text-center text-sm text-red-600">
+                {{ submitError }}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </section>
+
+    <transition name="fade">
+      <div
+        v-if="successModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="w-full max-w-lg rounded-3xl border border-border/60 bg-card p-8 text-center shadow-2xl">
+          <h3 class="text-2xl font-light text-foreground md:text-3xl">Заявка отправлена</h3>
+          <p class="mt-4 text-base leading-relaxed text-muted-foreground">
+            Спасибо за интерес к Строгановским Просторам. Мы внимательно изучим ваш запрос и скоро свяжемся с вами, чтобы
+            обсудить все детали мероприятия.
+          </p>
+          <button
+            type="button"
+            class="mt-6 inline-flex items-center justify-center rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+            @click="closeSuccessModal"
+          >
+            Понятно
+          </button>
+        </div>
+      </div>
+    </transition>
 
     <!-- Модалка фото -->
     <transition name="fade">
@@ -798,4 +1146,3 @@ useHead({
   opacity: 0;
 }
 </style>
-

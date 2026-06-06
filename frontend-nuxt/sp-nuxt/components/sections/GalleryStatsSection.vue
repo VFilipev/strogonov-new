@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
-import basePlanImage from "~/assets/resort/base-plan.webp";
+import basePlanImage from "~/assets/resort/base-map.webp";
 
 const props = defineProps({
   editMode: {
@@ -28,6 +28,157 @@ const localObjectUrls = ref([]);
 const gallerySavePending = ref(false);
 const gallerySaveError = ref("");
 const gallerySaveSuccess = ref("");
+const isBasePlanOpen = ref(false);
+const basePlanScale = ref(1);
+const basePlanPanX = ref(0);
+const basePlanPanY = ref(0);
+const basePlanDragging = ref(false);
+
+let planMouseDrag = null;
+let planTouchPan = null;
+let planPinch = null;
+
+const BASE_PLAN_MIN_SCALE = 1;
+const BASE_PLAN_MAX_SCALE = 4;
+
+const clampPlanScale = (v) =>
+  Math.min(BASE_PLAN_MAX_SCALE, Math.max(BASE_PLAN_MIN_SCALE, v));
+
+const onPlanPointerMoveGlobal = (e) => {
+  if (!planMouseDrag) return;
+  basePlanPanX.value = planMouseDrag.panX + (e.clientX - planMouseDrag.startX);
+  basePlanPanY.value = planMouseDrag.panY + (e.clientY - planMouseDrag.startY);
+};
+
+const onPlanPointerUpGlobal = () => {
+  basePlanDragging.value = false;
+  planMouseDrag = null;
+  removePlanMouseListeners();
+};
+
+const removePlanMouseListeners = () => {
+  if (!import.meta.client) return;
+  window.removeEventListener("pointermove", onPlanPointerMoveGlobal);
+  window.removeEventListener("pointerup", onPlanPointerUpGlobal);
+  window.removeEventListener("pointercancel", onPlanPointerUpGlobal);
+};
+
+const resetBasePlanView = () => {
+  basePlanScale.value = BASE_PLAN_MIN_SCALE;
+  basePlanPanX.value = 0;
+  basePlanPanY.value = 0;
+  basePlanDragging.value = false;
+  planMouseDrag = null;
+  planTouchPan = null;
+  planPinch = null;
+  removePlanMouseListeners();
+};
+
+const snapPlanPanIfMinScale = () => {
+  if (basePlanScale.value <= BASE_PLAN_MIN_SCALE) {
+    basePlanPanX.value = 0;
+    basePlanPanY.value = 0;
+  }
+};
+
+const onPlanPointerDown = (e) => {
+  if (e.pointerType !== "mouse" || e.button !== 0) return;
+  if (basePlanScale.value <= BASE_PLAN_MIN_SCALE) return;
+  basePlanDragging.value = true;
+  planMouseDrag = {
+    startX: e.clientX,
+    startY: e.clientY,
+    panX: basePlanPanX.value,
+    panY: basePlanPanY.value,
+  };
+  window.addEventListener("pointermove", onPlanPointerMoveGlobal);
+  window.addEventListener("pointerup", onPlanPointerUpGlobal);
+  window.addEventListener("pointercancel", onPlanPointerUpGlobal);
+};
+
+const onBasePlanWheel = (e) => {
+  const factor = e.deltaY > 0 ? 0.9 : 1.1;
+  basePlanScale.value = clampPlanScale(basePlanScale.value * factor);
+  snapPlanPanIfMinScale();
+};
+
+const stepBasePlanZoom = (direction) => {
+  basePlanScale.value = clampPlanScale(basePlanScale.value + direction * 0.35);
+  snapPlanPanIfMinScale();
+};
+
+const touchPairDistance = (touches) => {
+  const a = touches[0];
+  const b = touches[1];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+};
+
+const onPlanTouchStart = (e) => {
+  if (e.touches.length === 2) {
+    planPinch = {
+      dist: touchPairDistance(e.touches),
+      scale: basePlanScale.value,
+    };
+    planTouchPan = null;
+    return;
+  }
+  if (e.touches.length === 1 && basePlanScale.value > BASE_PLAN_MIN_SCALE) {
+    const t = e.touches[0];
+    planTouchPan = {
+      startX: t.clientX,
+      startY: t.clientY,
+      panX: basePlanPanX.value,
+      panY: basePlanPanY.value,
+    };
+  }
+};
+
+const onPlanTouchMove = (e) => {
+  if (e.touches.length === 2 && planPinch) {
+    e.preventDefault();
+    basePlanScale.value = clampPlanScale(
+      planPinch.scale * (touchPairDistance(e.touches) / planPinch.dist)
+    );
+    return;
+  }
+  if (e.touches.length === 1 && planTouchPan) {
+    e.preventDefault();
+    const t = e.touches[0];
+    basePlanPanX.value = planTouchPan.panX + (t.clientX - planTouchPan.startX);
+    basePlanPanY.value = planTouchPan.panY + (t.clientY - planTouchPan.startY);
+  }
+};
+
+const onPlanTouchEnd = (e) => {
+  if (e.touches.length < 2) {
+    planPinch = null;
+    snapPlanPanIfMinScale();
+  }
+  if (e.touches.length === 0) planTouchPan = null;
+};
+
+const basePlanTransformStyle = computed(() => ({
+  transform: `translate(${basePlanPanX.value}px, ${basePlanPanY.value}px) scale(${basePlanScale.value})`,
+  transformOrigin: "center center",
+}));
+
+const basePlanViewportCursorClass = computed(() => {
+  if (basePlanScale.value <= BASE_PLAN_MIN_SCALE) return "cursor-zoom-in";
+  return basePlanDragging.value ? "cursor-grabbing" : "cursor-grab";
+});
+
+const basePlanZoomPercentLabel = computed(() =>
+  `${Math.round(basePlanScale.value * 100)}%`
+);
+
+const openBasePlanViewer = () => {
+  isBasePlanOpen.value = true;
+};
+
+const closeBasePlanViewer = () => {
+  isBasePlanOpen.value = false;
+  resetBasePlanView();
+};
 
 const toNumberOrZero = (value) => {
   const parsed = Number.parseInt(value, 10);
@@ -350,10 +501,23 @@ watch(
   { immediate: true }
 );
 
+watch(isBasePlanOpen, (open) => {
+  if (!import.meta.client) return;
+  document.body.style.overflow = open ? "hidden" : "";
+  if (open) resetBasePlanView();
+});
 
 let observer;
 
+const onBasePlanEscape = (event) => {
+  if (event.key !== "Escape" || !isBasePlanOpen.value) return;
+  closeBasePlanViewer();
+};
+
 onMounted(() => {
+  if (import.meta.client) {
+    window.addEventListener("keydown", onBasePlanEscape);
+  }
   if (sectionRef.value) {
     let revealRaf = null;
     observer = new IntersectionObserver(
@@ -373,6 +537,12 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  if (import.meta.client) {
+    window.removeEventListener("keydown", onBasePlanEscape);
+    document.body.style.overflow = "";
+    removePlanMouseListeners();
+    resetBasePlanView();
+  }
   editableGalleryImages.value.forEach((item) => {
     releaseObjectUrl(item.localPreviewUrl);
   });
@@ -740,7 +910,12 @@ onBeforeUnmount(() => {
         <div
           class="order-2 overflow-hidden rounded-2xl border border-border/50 bg-card/80 shadow-2xl backdrop-blur lg:order-1"
         >
-          <div class="relative">
+          <button
+            type="button"
+            class="group relative block w-full cursor-zoom-in p-0 text-left outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Открыть план базы во весь экран"
+            @click="openBasePlanViewer"
+          >
             <NuxtImg
               :src="basePlanImage"
               :width="694"
@@ -752,7 +927,12 @@ onBeforeUnmount(() => {
             <div
               class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"
             />
-          </div>
+            <span
+              class="pointer-events-none absolute bottom-3 right-3 rounded-md bg-background/85 px-2.5 py-1 text-xs font-medium text-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              Увеличить
+            </span>
+          </button>
         </div>
 
         <div class="order-1 space-y-4 lg:order-2">
@@ -879,6 +1059,90 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </div>
+
+    <Teleport to="body">
+      <div
+        v-if="isBasePlanOpen"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+        role="presentation"
+      >
+        <div
+          class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          aria-hidden="true"
+          @click="closeBasePlanViewer"
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="План базы отдыха"
+          class="relative z-[101] max-h-[92vh] w-full max-w-5xl overflow-hidden overscroll-contain rounded-xl border border-border/60 bg-background shadow-2xl"
+          @click.stop
+        >
+          <button
+            type="button"
+            class="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background/95 text-foreground shadow-md transition-colors hover:bg-muted"
+            aria-label="Закрыть"
+            @click="closeBasePlanViewer"
+          >
+            <span class="text-xl leading-none" aria-hidden="true">×</span>
+          </button>
+          <div
+            class="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-2"
+          >
+            <div
+              class="pointer-events-auto flex items-center gap-0.5 rounded-full border border-border/60 bg-background/95 px-1 py-0.5 shadow-md sm:gap-1 sm:px-2 sm:py-1"
+            >
+              <button
+                type="button"
+                class="flex h-9 min-w-9 items-center justify-center rounded-full text-lg font-medium leading-none text-foreground hover:bg-muted"
+                aria-label="Уменьшить"
+                @click="stepBasePlanZoom(-1)"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                class="min-w-[3.25rem] rounded-full px-2 py-1.5 text-center text-xs font-medium tabular-nums text-foreground hover:bg-muted sm:text-sm"
+                aria-label="Сбросить масштаб"
+                @click="resetBasePlanView"
+              >
+                {{ basePlanZoomPercentLabel }}
+              </button>
+              <button
+                type="button"
+                class="flex h-9 min-w-9 items-center justify-center rounded-full text-lg font-medium leading-none text-foreground hover:bg-muted"
+                aria-label="Увеличить"
+                @click="stepBasePlanZoom(1)"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div
+            class="relative flex min-h-[min(60vh,520px)] w-full select-none touch-none pt-14 pb-16 sm:min-h-[min(70vh,640px)]"
+            :class="basePlanViewportCursorClass"
+            @wheel.prevent="onBasePlanWheel"
+            @pointerdown="onPlanPointerDown"
+            @touchstart.passive="onPlanTouchStart"
+            @touchmove="onPlanTouchMove"
+            @touchend="onPlanTouchEnd"
+            @touchcancel="onPlanTouchEnd"
+          >
+            <div class="m-auto will-change-transform" :style="basePlanTransformStyle">
+              <NuxtImg
+                :src="basePlanImage"
+                :width="1388"
+                :height="972"
+                alt="План базы отдыха Строгановские Просторы"
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                draggable="false"
+                class="max-h-[min(75vh,820px)] w-auto max-w-[min(96vw,1200px)] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
         <!-- <div class="flex justify-center mt-10">
           <div style="width:360px;height:600px;overflow:hidden;position:relative;">

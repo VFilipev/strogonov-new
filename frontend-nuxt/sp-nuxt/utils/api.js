@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toURLParams } from "./apiHelpers.js";
 
 function appendSlash(url) {
   return url.endsWith("/") ? url : `${url}/`;
@@ -12,34 +13,6 @@ function joinUrl(baseUrl, path) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   return `${normalizedBase}${normalizedPath}`;
-}
-
-export function toURLParams(filter = {}) {
-  const params = new URLSearchParams();
-
-  Object.entries(filter || {}).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") return;
-
-    if (Array.isArray(value)) {
-      value.forEach((item) => {
-        if (item !== undefined && item !== null && item !== "") {
-          params.append(key, String(item));
-        }
-      });
-      return;
-    }
-
-    params.append(key, String(value));
-  });
-
-  return params.toString();
-}
-
-export function normalizeListResponse(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === "object" && Array.isArray(value.results)) return value.results;
-  return [];
 }
 
 async function _save(url, obj, config = {}) {
@@ -129,6 +102,7 @@ export const NewsApi = createRuntimeApi("/news/");
 export const EventTypesApi = createRuntimeApi("/events/types/");
 export const LodgesApi = createRuntimeApi("/lodges/");
 export const LodgeTypesApi = createRuntimeApi("/lodges/types/");
+export const LodgeCategoriesApi = createRuntimeApi("/lodges/categories/");
 export const StatisticsApi = createRuntimeApi("/statistics/");
 export const GalleryApi = createRuntimeApi("/gallery/");
 export const HeroApi = createRuntimeApi("/hero/");
@@ -137,3 +111,4 @@ export const RestaurantApi = createRuntimeApi("/restaurant/");
 export const RestaurantImagesApi = createRuntimeApi("/restaurant/images/");
 export const MealTypesApi = createRuntimeApi("/restaurant/meal-types/");
 export const BenefitsApi = createRuntimeApi("/restaurant/benefits/");
+export const EventCalculatorRequestsApi = createRuntimeApi("/events/requests/");

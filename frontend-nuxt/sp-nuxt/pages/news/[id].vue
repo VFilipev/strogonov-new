@@ -18,7 +18,7 @@ useHead({
   meta: [
     {
       name: "description",
-      content: computed(() => newsItem.value?.excerpt || newsItem.value?.description || "Новость"),
+      content: computed(() => newsItem.value?.short_description || "Новость"),
     },
   ],
   link: [{ rel: "canonical", href: `${siteUrl}/news/${newsId}` }],

@@ -140,12 +140,12 @@ onMounted(() => {
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
-          <div
+          <NuxtLink
             v-for="(activity, index) in activities"
             :key="activity.id ?? activity.title"
-            class="group relative overflow-hidden rounded-2xl border border-border/50 bg-white/70 transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in"
+            to="/services"
+            class="group relative block overflow-hidden rounded-2xl border border-border/50 bg-white/70 transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             :style="{ animationDelay: `${index * 150}ms` }"
-            @click="unlockVideo"
             @mouseenter="handleMouseEnter(index)"
             @mouseleave="handleMouseLeave(index)"
           >
@@ -193,7 +193,7 @@ onMounted(() => {
                 </p>
               </div>
             </div>
-          </div>
+          </NuxtLink>
         </div>
       </div>
     </section>

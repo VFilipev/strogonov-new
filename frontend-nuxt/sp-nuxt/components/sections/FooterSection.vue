@@ -21,14 +21,21 @@ const { showServicesNav } = useNavVisibility();
                 >дома</a
               >
             </li>
+            <li>
+              <a
+                href="/#restaurant"
+                class="transition-colors hover:text-foreground"
+                >ресторан</a
+              >
+            </li>
             <li v-if="showServicesNav">
-              <a href="#active" class="transition-colors hover:text-foreground"
-                >активный отдых и услуги</a
+              <NuxtLink to="/services" class="transition-colors hover:text-foreground"
+                >прайс услуг</NuxtLink
               >
             </li>
             <li>
-              <a href="#" class="transition-colors hover:text-foreground"
-                >главная страница</a
+              <NuxtLink to="/" class="transition-colors hover:text-foreground"
+                >главная страница</NuxtLink
               >
             </li>
           </ul>
@@ -71,16 +78,21 @@ const { showServicesNav } = useNavVisibility();
         </div>
 
         <div>
-          <h4 class="mb-4 font-semibold text-foreground">правовые документы</h4>
+          <h4 class="mb-4 font-semibold text-foreground">документы</h4>
           <ul class="space-y-2 text-sm text-muted-foreground">
             <li>
-              <a href="#" class="transition-colors hover:text-foreground"
+              <a href="/documents/consent-new.pdf" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-foreground"
                 >Согласие на обработку<br />персональных данных</a
               >
             </li>
             <li>
-              <a href="#" class="transition-colors hover:text-foreground"
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-foreground"
                 >Политика конфиденциальности</a
+              >
+            </li>
+            <li>
+              <NuxtLink to="/documents" class="transition-colors hover:text-foreground"
+                >Все документы</NuxtLink
               >
             </li>
           </ul>
