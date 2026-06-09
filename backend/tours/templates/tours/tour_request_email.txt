@@ -1,0 +1,17 @@
+Новая заявка на бронирование
+
+Тип: {{ type_label }}
+Маршрут: {{ route_title }}
+{% if checkin_date %}Дата заезда (пятница): {{ checkin_date|date:"d.m.Y" }}
+{% endif %}Выезд: {{ start_at|date:"d.m.Y H:i" }} — {{ end_at|date:"H:i" }}
+
+Имя: {{ contact_name }}
+Телефон: {{ contact_phone }}
+E-mail: {{ contact_email }}
+Квадроциклов в заявке: {{ vehicles_count }}
+Человек: {{ people_count }}
+
+Группа: {{ total_vehicles }} из {{ min_vehicles }} квадроциклов{% if not meets_minimum %} (НЕ НАБРАНО, нужно ещё {{ vehicles_needed }}){% endif %}
+
+Режим бронирования: {{ mode }}
+{% if over_capacity %}ВНИМАНИЕ: не было свободного инструктора/техники (лист ожидания).{% endif %}

@@ -1,0 +1,20 @@
+<h2>Новая заявка на бронирование</h2>
+<table cellpadding="6" style="border-collapse:collapse;">
+  <tr><td><b>Тип</b></td><td>{{ type_label }}</td></tr>
+  <tr><td><b>Маршрут</b></td><td>{{ route_title }}</td></tr>
+  {% if checkin_date %}<tr><td><b>Дата заезда</b></td><td>{{ checkin_date|date:"d.m.Y" }} (пятница)</td></tr>{% endif %}
+  <tr><td><b>Выезд</b></td><td>{{ start_at|date:"d.m.Y H:i" }} &mdash; {{ end_at|date:"H:i" }}</td></tr>
+  <tr><td><b>Имя</b></td><td>{{ contact_name }}</td></tr>
+  <tr><td><b>Телефон</b></td><td>{{ contact_phone }}</td></tr>
+  <tr><td><b>E-mail</b></td><td>{{ contact_email }}</td></tr>
+  <tr><td><b>Квадроциклов в заявке</b></td><td>{{ vehicles_count }}</td></tr>
+  <tr><td><b>Человек</b></td><td>{{ people_count }}</td></tr>
+  <tr><td><b>Группа</b></td><td>{{ total_vehicles }} из {{ min_vehicles }} квадроциклов</td></tr>
+  <tr><td><b>Режим</b></td><td>{{ mode }}</td></tr>
+</table>
+{% if not meets_minimum %}
+<p style="color:#b8860b;"><b>Группа не набрана:</b> нужно ещё {{ vehicles_needed }} квадроцикл(ов) до минимума. Проведение не гарантировано.</p>
+{% endif %}
+{% if over_capacity %}
+<p style="color:#b00;"><b>Внимание:</b> не было свободного инструктора/техники на это время — заявка в листе ожидания (лайт-режим).</p>
+{% endif %}
