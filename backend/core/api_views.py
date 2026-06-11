@@ -42,6 +42,5 @@ def api_root(request, format=None):
             'gallery-upload': f'{base_url}/auth/edit/gallery/upload/',
             'gallery-apply': f'{base_url}/auth/edit/gallery/apply/',
         },
-        'sitemap': f'{base_url}/sitemap.xml',
         'robots': f'{base_url}/robots.txt',
     })

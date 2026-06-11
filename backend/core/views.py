@@ -7,8 +7,6 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.http import HttpResponse
 from django.middleware.csrf import get_token
-from django.contrib.sitemaps import Sitemap
-from django.contrib.sitemaps.views import sitemap
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from .models import Statistic, GalleryImage, HeroSection, SiteSettings, GuestFeedback, AfishaEvent
@@ -20,12 +18,6 @@ from .serializers import (
     GuestFeedbackCreateSerializer, GuestFeedbackSerializer,
     AfishaEventSerializer,
 )
-from .sitemaps import (
-    LodgeTypeSitemap, LodgeSitemap, NewsSitemap,
-    ActivitySitemap, EventTypeSitemap
-)
-
-
 class StatisticViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Statistic.objects.filter(is_active=True)
@@ -298,24 +290,13 @@ class GuestFeedbackViewSet(mixins.CreateModelMixin,
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
-sitemaps = {
-    'lodgetypes': LodgeTypeSitemap,
-    'lodges': LodgeSitemap,
-    'news': NewsSitemap,
-    'activities': ActivitySitemap,
-    'eventtypes': EventTypeSitemap,
-}
-
-sitemap_view = lambda request: sitemap(request, sitemaps)
-
-
-
 @api_view(['GET'])
 def robots_txt(request):
 
     scheme = request.scheme
     host = request.get_host()
-    sitemap_url = f"{scheme}://{host}/api/sitemap.xml"
+    # Карту сайта генерит фронт (@nuxtjs/sitemap) по адресу /sitemap.xml.
+    sitemap_url = f"{scheme}://{host}/sitemap.xml"
 
     content = f"""User-agent: *
 Allow: /
