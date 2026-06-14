@@ -390,6 +390,12 @@ class HeroSection(SEOMixin):
         verbose_name='Постер видео',
         help_text='Постер для видео (отображается до загрузки видео)'
     )
+    video_poster_webp = ImageSpecField(
+        source='video_poster',
+        processors=[ResizeToFill(1920, 1080)],
+        format='WEBP',
+        options={'quality': 70}
+    )
     display_type = models.CharField(
         max_length=20,
         choices=DISPLAY_TYPE_CHOICES,

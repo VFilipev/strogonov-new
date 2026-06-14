@@ -215,9 +215,14 @@ class HeroSectionSerializer(ImageVariantsMixin, serializers.ModelSerializer):
     def get_video_poster_url(self, obj):
         if obj.video_poster:
             request = self.context.get('request')
+            try:
+                webp_url = obj.video_poster_webp.url if obj.video_poster_webp else None
+            except Exception:
+                webp_url = None
+            url = webp_url or obj.video_poster.url
             if request:
-                return request.build_absolute_uri(obj.video_poster.url)
-            return obj.video_poster.url
+                return request.build_absolute_uri(url)
+            return url
         return None
 
     def get_promo_video_url(self, obj):
