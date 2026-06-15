@@ -2,10 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Подключаем шрифты Lato */
+/* Подключаем шрифты Lato (woff2 — сабсет латиница+кириллица, ttf — фолбэк) */
 @font-face {
   font-family: 'Lato';
-  src: url('/fonts/Lato-Light.ttf') format('truetype');
+  src: url('/fonts/Lato-Light.woff2') format('woff2'),
+       url('/fonts/Lato-Light.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -13,7 +14,8 @@
 
 @font-face {
   font-family: 'Lato';
-  src: url('/fonts/Lato-Regular.ttf') format('truetype');
+  src: url('/fonts/Lato-Regular.woff2') format('woff2'),
+       url('/fonts/Lato-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -21,7 +23,8 @@
 
 @font-face {
   font-family: 'Lato';
-  src: url('/fonts/Lato-Medium.ttf') format('truetype');
+  src: url('/fonts/Lato-Medium.woff2') format('woff2'),
+       url('/fonts/Lato-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -29,7 +32,8 @@
 
 @font-face {
   font-family: 'Lato';
-  src: url('/fonts/Lato-SemiBold.ttf') format('truetype');
+  src: url('/fonts/Lato-SemiBold.woff2') format('woff2'),
+       url('/fonts/Lato-SemiBold.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -37,7 +41,8 @@
 
 @font-face {
   font-family: 'Lato';
-  src: url('/fonts/Lato-Bold.ttf') format('truetype');
+  src: url('/fonts/Lato-Bold.woff2') format('woff2'),
+       url('/fonts/Lato-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -133,6 +138,12 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {

@@ -125,7 +125,12 @@ const heroBackgroundStyle = computed(() => {
 useHead(() => ({
   link: [
     ...(heroVideoPoster.value
-      ? [{ rel: "preload", as: "image", href: heroVideoPoster.value }]
+      ? [{ rel: "preload", as: "image", href: heroVideoPoster.value, fetchpriority: "high" }]
+      : []),
+    // Preload LCP-картинки, когда показываем фото (а не видео): фон в CSS
+    // не виден предсканеру, поэтому грузим её приоритетно сразу из <head>.
+    ...(!showHeroVideo.value && heroImageSrc.value
+      ? [{ rel: "preload", as: "image", href: heroImageSrc.value, fetchpriority: "high" }]
       : []),
     { rel: "preload", as: "image", href: logo },
     { rel: "preload", as: "image", href: nac },
@@ -421,6 +426,10 @@ onBeforeUnmount(() => {
 <template>
   <section class="hero-section relative flex items-center justify-center overflow-hidden">
 
+    <h1 class="sr-only">
+      База отдыха «Строгановские Просторы» — коттеджи и глэмпинг в Пермском крае
+    </h1>
+
     <div class="absolute inset-0 z-0 overflow-hidden">
       <div
         ref="parallaxLayerRef"
@@ -515,7 +524,7 @@ onBeforeUnmount(() => {
             <NuxtLink
               v-if="showServicesNav"
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              to="/services"
+              to="/uslugi"
               >услуги</NuxtLink
             >
             <NuxtLink
@@ -583,7 +592,7 @@ onBeforeUnmount(() => {
           <NuxtLink
             v-if="showServicesNav"
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            to="/services"
+            to="/uslugi"
             @click="closeMobileMenu"
             >услуги</NuxtLink
           >
@@ -599,6 +608,12 @@ onBeforeUnmount(() => {
             href="/event-calculator"
             @click="closeMobileMenu"
             >мероприятия</a
+          >
+          <a
+            class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
+            href="/sauna"
+            @click="closeMobileMenu"
+            >спа и баня</a
           >
           <a
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
@@ -622,12 +637,7 @@ onBeforeUnmount(() => {
       <div class="container mx-auto px-6 md:px-8">
         <div class="grid items-end gap-8 md:grid-cols-2">
           <div
-            class="animate-fade-in"
-            style="
-              animation-delay: 0.3s;
-              opacity: 0;
-              animation-fill-mode: forwards;
-            "
+            class="transition-opacity duration-300"
           >
             <p
               class="text-2xl font-light leading-relaxed text-primary-foreground md:text-3xl"
@@ -645,12 +655,7 @@ onBeforeUnmount(() => {
           </div>
 
           <div
-            class="animate-slide-in-right rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 p-6 backdrop-blur-md transition-all duration-500 hover:bg-primary-foreground/15 md:p-8"
-            style="
-              animation-delay: 0.6s;
-              opacity: 0;
-              animation-fill-mode: forwards;
-            "
+            class="rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 p-6 backdrop-blur-md transition-all duration-500 hover:bg-primary-foreground/15 md:p-8"
           >
             <p
               class="text-base leading-relaxed text-primary-foreground md:text-lg"

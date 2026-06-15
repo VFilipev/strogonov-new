@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useHead } from "#imports";
 import { ChevronDown, Menu, Phone, X } from "lucide-vue-next";
 import logo from "~/assets/resort/logo.webp";
 import nac from "~/assets/resort/nac.webp";
@@ -21,6 +22,19 @@ const { showServicesNav, showToursNav } = useNavVisibility();
 const heroBackgroundStyle = {
   backgroundImage: `url("${String(heroImage)}")`,
 };
+
+// Preload фоновой LCP-картинки: background-image не виден предсканеру,
+// поэтому подсказываем браузеру начать загрузку сразу из <head>.
+useHead({
+  link: [
+    {
+      rel: "preload",
+      as: "image",
+      href: String(heroImage),
+      fetchpriority: "high",
+    },
+  ],
+});
 
 const parallaxLayerRef = ref(null);
 const parallaxEnabled = ref(false);
@@ -154,13 +168,13 @@ onBeforeUnmount(() => {
           <div class="hidden items-center gap-8 md:flex">
             <a
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              href="/lodge"
+              href="/doma"
               >дома</a
             >
             <NuxtLink
               v-if="showServicesNav"
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              to="/services"
+              to="/uslugi"
               >услуги</NuxtLink
             >
             <NuxtLink
@@ -219,14 +233,14 @@ onBeforeUnmount(() => {
         <div class="flex flex-col gap-3 text-primary-foreground">
           <a
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            href="/lodge"
+            href="/doma"
             @click="closeMobileMenu"
             >дома</a
           >
           <NuxtLink
             v-if="showServicesNav"
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            to="/services"
+            to="/uslugi"
             @click="closeMobileMenu"
             >услуги</NuxtLink
           >

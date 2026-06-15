@@ -194,6 +194,7 @@ const createEditableGalleryItem = (item) => ({
   column: item?.column || "left",
   alt_text: item?.alt_text || "",
   image_webp_url: item?.image_webp_url || item?.image_url || "",
+  image_variants: item?.image_variants || null,
   image_placeholder_url: item?.image_placeholder_url || null,
   image_url: item?.image_url || item?.image_webp_url || "",
   localPreviewUrl: null,
@@ -342,7 +343,14 @@ const rightColumn = computed(() => {
 });
 
 const getImageDisplaySrc = (image) => {
-  return image?.localPreviewUrl || image?.image_webp_url || image?.image_url || "";
+  return (
+    image?.localPreviewUrl ||
+    image?.image_variants?.medium ||
+    image?.image_variants?.large ||
+    image?.image_webp_url ||
+    image?.image_url ||
+    ""
+  );
 };
 
 const getImageDisplayPlaceholder = (image) => {
@@ -383,6 +391,7 @@ const selectImageFromDb = (image, sourceId) => {
   image.sourceImageId = source.id;
   image.alt_text = source.alt_text || "";
   image.image_webp_url = source.image_webp_url || source.image_url || "";
+  image.image_variants = source.image_variants || null;
   image.image_placeholder_url = source.image_placeholder_url || null;
   image.image_url = source.image_url || source.image_webp_url || "";
 };

@@ -21,7 +21,7 @@ useHead({
       content: computed(() => lodge.value?.description || "Информация о домике"),
     },
   ],
-  link: [{ rel: "canonical", href: `${siteUrl}/lodge/${lodgeId}` }],
+  link: [{ rel: "canonical", href: `${siteUrl}/doma/${lodgeId}` }],
 });
 </script>
 

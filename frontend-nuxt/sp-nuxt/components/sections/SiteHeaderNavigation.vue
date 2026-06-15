@@ -83,8 +83,8 @@ const { showServicesNav, showToursNav } = useNavVisibility()
           </div>
 
           <div class="hidden items-center gap-6 lg:flex">
-            <NuxtLink :class="getLinkClass('lodge')" to="/lodge">дома</NuxtLink>
-            <NuxtLink v-if="showServicesNav" :class="getLinkClass('services')" to="/services">услуги</NuxtLink>
+            <NuxtLink :class="getLinkClass('lodge')" to="/doma">дома</NuxtLink>
+            <NuxtLink v-if="showServicesNav" :class="getLinkClass('services')" to="/uslugi">услуги</NuxtLink>
             <NuxtLink v-if="showToursNav" :class="getLinkClass('tours')" to="/tours">туры</NuxtLink>
             <NuxtLink :class="getLinkClass('events')" to="/event-calculator">афиша и мероприятия</NuxtLink>
             <NuxtLink :class="getLinkClass('sauna')" to="/sauna">спа и баня</NuxtLink>
@@ -120,11 +120,11 @@ const { showServicesNav, showToursNav } = useNavVisibility()
         class="mt-3 ml-auto w-full max-w-[360px] rounded-2xl border border-white/20 bg-primary/95 p-4 shadow-xl backdrop-blur-md md:hidden"
       >
         <div class="flex flex-col gap-3 text-primary-foreground">
-          <NuxtLink :class="getLinkClass('lodge')" to="/lodge" @click="closeMobileMenu">дома</NuxtLink>
+          <NuxtLink :class="getLinkClass('lodge')" to="/doma" @click="closeMobileMenu">дома</NuxtLink>
           <NuxtLink
             v-if="showServicesNav"
             :class="getLinkClass('services')"
-            to="/services"
+            to="/uslugi"
             @click="closeMobileMenu"
             >услуги</NuxtLink
           >

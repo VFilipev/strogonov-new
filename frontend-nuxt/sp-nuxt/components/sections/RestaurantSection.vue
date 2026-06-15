@@ -42,7 +42,6 @@ const mealTypes = [
 
 const benefits = [
   "Завтрак, обед и ужин на территории базы",
-  "Комбо-предложения для гостей",
   "Меню с основными блюдами, закусками и десертами",
   "Подходит для гостей с детьми и компаний",
 ];
@@ -182,13 +181,7 @@ function closeMenuGallery() {
             <button
               v-for="(meal, index) in mealTypes"
               :key="index"
-              @click="activeMeal = activeMeal === index ? null : index"
-              class="flex items-center gap-3 rounded-xl border px-5 py-3 transition-all duration-300"
-              :class="
-                activeMeal === index
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5'
-              "
+              class="flex items-center gap-3 rounded-xl border px-5 py-3 transition-all duration-300 border-border bg-card hover:border-primary/50 hover:bg-primary/5"
             >
               <component :is="meal.icon" class="h-5 w-5 flex-shrink-0" />
               <div class="min-w-0 flex-1 text-left">
@@ -215,11 +208,6 @@ function closeMenuGallery() {
               @click="openMenuGallery"
             >
               Посмотреть меню
-            </button>
-            <button
-              class="rounded-xl border border-primary/30 bg-transparent px-8 py-3 text-primary transition-colors hover:bg-primary/5"
-            >
-              Комбо-предложения
             </button>
           </div>
         </div>

@@ -18,6 +18,8 @@ useHead({
   ],
   link: [{ rel: "canonical", href: `${siteUrl}/news` }],
 });
+
+useBreadcrumbs([{ name: "Новости", path: "/news" }]);
 </script>
 
 <template>

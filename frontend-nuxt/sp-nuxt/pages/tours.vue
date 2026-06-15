@@ -1,18 +1,22 @@
 <script setup>
 import {
   ArrowRight,
-  BedDouble,
   CalendarDays,
   Clock3,
-  Fish,
-  Flame,
+  LoaderCircle,
   Gauge,
   PackageCheck,
   ShieldCheck,
-  Utensils,
   Users,
+  X,
 } from "lucide-vue-next";
 import ToursHero from "~/components/sections/ToursHero.vue";
+import {
+  createTourBooking,
+  getRouteAvailability,
+  getWeekendAvailability,
+  useToursPageData,
+} from "~/composables/useTours";
 
 import tourCardImage1 from "~/assets/resort/tour1.jpeg";
 import tourCardImage2 from "~/assets/resort/tour2.jpeg";
@@ -25,9 +29,9 @@ import galleryHero8 from "~/assets/tours/hero8.webp";
 import galleryHero9 from "~/assets/tours/hero9.webp";
 import galleryHero10 from "~/assets/tours/hero10.webp";
 import galleryHero11 from "~/assets/tours/hero11.webp";
-import weekendFoodImage from "~/assets/restoran/menu.webp";
-import weekendRelaxImage from "~/assets/resort/sauna-hero.jpeg";
-import weekendStayImage from "~/assets/resort/frame.webp";
+import weekendFoodImage from "~/assets/restoran/menu3.webp";
+import weekendRelaxImage from "~/assets/resort/sauna.jpg";
+import weekendStayImage from "~/assets/resort/stay.jpg";
 
 const config = useRuntimeConfig();
 const siteUrl = config.public.siteUrl;
@@ -38,45 +42,6 @@ const heroIntro =
   "Незабываемые туры на квадроциклах в Пермском крае: премиальная техника TGB, сопровождение гида и полный комплект экипировки.";
 
 const formatRub = (value) => `${new Intl.NumberFormat("ru-RU").format(value)} руб`;
-
-const quadTours = [
-  {
-    id: "oznakomitelnyy",
-    title: "Ознакомительный",
-    duration: "60 минут",
-    group: "от 3 квадроциклов",
-    difficulty: "легкая",
-    price: 5000,
-    photo: tourCardImage1,
-  },
-  {
-    id: "bobrovaya-plitina",
-    title: "Бобровая плотина",
-    duration: "2,5 - 3 часа",
-    group: "от 3 квадроциклов",
-    difficulty: "средняя",
-    price: 14000,
-    photo: tourCardImage2,
-  },
-  {
-    id: "pchelodey",
-    title: "Пчеловод",
-    duration: "3 - 4 часа",
-    group: "от 4 квадроциклов",
-    difficulty: "средняя",
-    price: 17000,
-    photo: tourCardImage3,
-  },
-  {
-    id: "vedmin-krug",
-    title: "Чермоз",
-    duration: "10 часов",
-    group: "от 4 квадроциклов",
-    difficulty: "тяжелая",
-    price: 35000,
-    photo: tourCardImage4,
-  },
-];
 
 const includedItems = [
   {
@@ -105,128 +70,348 @@ const includedItems = [
   },
 ];
 
-const weekendTourBenefits = [
-  {
-    title: "Готовый план на выходные",
-    text: "Не нужно собирать программу из отдельных услуг: заезд, проживание, питание, маршрут и отдых уже собраны в один сценарий.",
-  },
-  {
-    title: "Два маршрута на выбор",
-    text: "Для тура выходного дня доступны «Бобровая плотина» и «Пчеловод». В дальнейшем линейку можно расширить новыми направлениями.",
-  },
-  {
-    title: "Отдых после маршрута",
-    text: "После квадротура можно восстановиться в бане на дровах, порыбачить на форель и провести вечер на базе.",
-  },
-];
-
-const weekendTourOptions = [
-  {
-    id: "weekend-bobrovaya-plotina",
-    title: "Бобровая плотина",
-    description:
-      "Маршрут к природной локации для тех, кто хочет совместить драйв, лесные дороги и спокойный отдых на базе.",
-    price: 32000,
-    oldPrice: 41000,
-    photo: tourCardImage2,
-    photoAlt: "Квадроцикл на маршруте Бобровая плотина",
-  },
-  {
-    id: "weekend-pcheloved",
-    title: "Пчеловод",
-    description:
-      "Более насыщенная поездка по живописной дороге к пасеке с ощущением полноценного путешествия на выходные.",
-    price: 37000,
-    oldPrice: 43000,
-    photo: tourCardImage3,
-    photoAlt: "Квадроцикл на маршруте Пчеловод",
-  },
-];
-
-const weekendSchedule = [
-  {
-    day: "Пятница",
-    items: [
-      "Заезд с 15:00 до 19:00",
-      "Размещение в доме категории Комфорт без кухни",
-      "Ужин с 18:00 до 20:00",
-    ],
-  },
-  {
-    day: "Суббота",
-    items: [
-      "Завтрак с 9:00 до 10:00",
-      "Выезд на квадроцикле по выбранному маршруту",
-      "Обед с 12:00 до 14:00",
-      "Баня на дровах 2 часа",
-      "Ужин с 18:00 до 20:00",
-    ],
-  },
-  {
-    day: "Воскресенье",
-    items: [
-      "Завтрак с 9:00 до 10:00",
-      "Свободное время до 13:00",
-      "Выезд",
-    ],
-  },
-];
-
-const weekendIncludedItems = [
-  {
-    title: "Все, что входит в стоимость выбранного квадромаршрута",
-  },
-  {
-    title: "Проживание в доме класса Комфорт",
-  },
-  {
-    title: "Питание по программе тура",
-  },
-  {
-    title: "Рыбалка на форель",
-    text: "Рыбалка входит в стоимость тура, улов оплачивается отдельно: 1 500 руб/кг.",
-  },
-  {
-    title: "Баня на дровах",
-  },
-  {
-    title: "Прокат инвентаря",
-  },
-];
-
-const weekendExperienceItems = [
-  {
-    id: "food",
-    title: "Питание без забот",
-    text: "Блюда уже продуманы по программе тура, вам не нужно думать о меню и готовке.",
-    photo: weekendFoodImage,
-    photoAlt: "Блюдо из ресторана на базе отдыха",
-  },
-  {
-    id: "quad",
-    title: "Квадромаршрут и драйв",
-    text: "Главное действие уикенда: насыщенная поездка на квадроциклах с эмоциями и красивыми локациями.",
-    photo: galleryHero11,
-    photoAlt: "Квадроцикл на маршруте выходного дня",
-  },
-  {
-    id: "relax",
-    title: "Баня и релакс",
-    text: "После маршрута можно восстановиться в бане на дровах и перезагрузиться перед вечером.",
-    photo: weekendRelaxImage,
-    photoAlt: "Банный комплекс для отдыха после тура",
-  },
-  {
-    id: "stay",
-    title: "Проживание Комфорт",
-    text: "Понятное размещение на базе: ночевка в доме класса Комфорт без лишних организационных вопросов.",
-    photo: weekendStayImage,
-    photoAlt: "Дом для проживания на базе отдыха",
-  },
-];
-
 const coverStyle = (src) =>
   src ? { backgroundImage: `url("${String(src)}")` } : {};
+
+const fallbackRoutePhotos = {
+  oznakomitelnyy: tourCardImage1,
+  "bobrovaya-plotina": tourCardImage2,
+  pchelovod: tourCardImage3,
+  pcheloved: tourCardImage3,
+  "vedmin-krug": tourCardImage4,
+  chermoz: tourCardImage4,
+};
+
+const fallbackWeekendExperienceMedia = [
+  { id: "food", photo: weekendFoodImage, photoAlt: "Питание на базе отдыха" },
+  { id: "quad", photo: galleryHero11, photoAlt: "Квадроцикл на маршруте выходного дня" },
+  { id: "relax", photo: weekendRelaxImage, photoAlt: "Банный комплекс для отдыха после тура" },
+  { id: "stay", photo: weekendStayImage, photoAlt: "Дом для проживания на базе отдыха" },
+];
+
+const {
+  routes,
+  weekendProgram,
+  weekendRoutes,
+  pending: toursPending,
+  error: toursError,
+} = useToursPageData();
+
+const quadTours = computed(() =>
+  routes.value.map((tour, index) => ({
+    id: tour.id,
+    title: tour.title,
+    duration: tour.duration_label || `${tour.duration_minutes} минут`,
+    group: tour.group_label || `от ${tour.min_vehicles || 1} квадроциклов`,
+    difficulty: (tour.difficulty_display || tour.difficulty || "").toLowerCase(),
+    price: Number(tour.price || 0),
+    photo:
+      tour.image_variants?.card ||
+      tour.photo_url ||
+      fallbackRoutePhotos[tour.slug] ||
+      [tourCardImage1, tourCardImage2, tourCardImage3, tourCardImage4][index % 4],
+  })),
+);
+
+const weekendTourBenefits = computed(() => weekendProgram.value?.benefits || []);
+
+const weekendTourOptions = computed(() =>
+  weekendRoutes.value.map((route, index) => ({
+    id: route.id,
+    title: route.title,
+    description: route.tour_description || route.description || "Маршрут выходного дня.",
+    difficulty: route.difficulty_display || route.difficulty || "",
+    price: Number(route.tour_price ?? route.price ?? 0),
+    oldPrice: route.tour_old_price == null ? null : Number(route.tour_old_price),
+    photo:
+      route.image_variants?.card ||
+      route.photo_url ||
+      fallbackRoutePhotos[route.slug] ||
+      [tourCardImage2, tourCardImage3, tourCardImage1, tourCardImage4][index % 4],
+    photoAlt: `Маршрут ${route.title}`,
+  })),
+);
+
+const weekendSchedule = computed(() => weekendProgram.value?.schedule || []);
+const weekendIncludedItems = computed(() => weekendProgram.value?.included_items || []);
+const weekendExperienceItems = computed(() =>
+  (weekendProgram.value?.experience_items || []).map((item, index) => {
+    const media =
+      fallbackWeekendExperienceMedia.find((entry) => entry.id === item.id) ||
+      fallbackWeekendExperienceMedia[index % fallbackWeekendExperienceMedia.length];
+    return {
+      ...item,
+      photo: media.photo,
+      photoAlt: media.photoAlt,
+    };
+  }),
+);
+
+const weekendIntro = computed(
+  () =>
+    weekendProgram.value?.intro ||
+    "Формат для тех, кто хочет приехать на базу на весь уикенд: выбрать квадромаршрут, переночевать в комфортном доме и отдохнуть после активной поездки.",
+);
+
+const bookingModalOpen = ref(false);
+const bookingType = ref("route");
+const selectedRouteId = ref(null);
+const selectedRouteDate = ref("");
+const selectedCheckinDate = ref("");
+const selectedStartTime = ref("");
+const selectedJoinOuting = ref(null);
+const vehiclesCount = ref(1);
+const peopleCount = ref(null);
+const contactName = ref("");
+const contactPhone = ref("");
+const contactEmail = ref("");
+const comment = ref("");
+const bookingSubmitError = ref("");
+const bookingSubmitSuccess = ref("");
+const consentAccepted = ref(false);
+const availabilityError = ref("");
+const availabilityPending = ref(false);
+const routeAvailability = ref(null);
+const weekendAvailability = ref(null);
+const isSubmittingBooking = ref(false);
+const previousBodyOverflow = ref("");
+
+const bookingRoutes = computed(() =>
+  bookingType.value === "weekend_tour" ? weekendRoutes.value : routes.value,
+);
+const availableSlots = computed(() => routeAvailability.value?.slots || []);
+const availableFormingOutings = computed(() => routeAvailability.value?.forming_outings || []);
+
+const formatIsoTime = (isoString) => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(date);
+};
+
+const formatIsoDateTime = (isoString) => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const parseApiError = (error) => {
+  const fallbackMessage = "Не удалось выполнить запрос. Попробуйте ещё раз.";
+  const data = error?.response?.data;
+  if (!data) return fallbackMessage;
+  if (typeof data.detail === "string") return data.detail;
+  if (typeof data === "string") return data;
+  if (Array.isArray(data.non_field_errors) && data.non_field_errors[0]) {
+    return data.non_field_errors[0];
+  }
+  const firstKey = Object.keys(data)[0];
+  if (!firstKey) return fallbackMessage;
+  const firstValue = data[firstKey];
+  if (Array.isArray(firstValue) && firstValue[0]) return `${firstKey}: ${firstValue[0]}`;
+  if (typeof firstValue === "string") return `${firstKey}: ${firstValue}`;
+  return fallbackMessage;
+};
+
+const openNativeDatePicker = (event) => {
+  const input = event?.currentTarget;
+  if (typeof input?.showPicker !== "function") return;
+  try {
+    input.showPicker();
+  } catch {
+    // showPicker can be blocked outside a direct user gesture.
+  }
+};
+
+const isFridayIsoDate = (dateString) => {
+  if (!dateString) return false;
+  return new Date(`${dateString}T00:00:00`).getDay() === 5;
+};
+
+const handleWeekendDateChange = () => {
+  if (!selectedCheckinDate.value || isFridayIsoDate(selectedCheckinDate.value)) return;
+  selectedCheckinDate.value = "";
+  weekendAvailability.value = null;
+  availabilityError.value = "Для тура выходного дня выберите пятницу.";
+};
+
+const resetBookingForm = () => {
+  selectedRouteDate.value = "";
+  selectedCheckinDate.value = "";
+  selectedStartTime.value = "";
+  selectedJoinOuting.value = null;
+  vehiclesCount.value = 1;
+  peopleCount.value = null;
+  contactName.value = "";
+  contactPhone.value = "";
+  contactEmail.value = "";
+  comment.value = "";
+  bookingSubmitError.value = "";
+  bookingSubmitSuccess.value = "";
+  consentAccepted.value = false;
+  availabilityError.value = "";
+  routeAvailability.value = null;
+  weekendAvailability.value = null;
+};
+
+const openBookingModal = (type, routeId = null) => {
+  bookingType.value = type;
+  selectedRouteId.value =
+    routeId ||
+    bookingRoutes.value?.[0]?.id ||
+    null;
+  resetBookingForm();
+  bookingModalOpen.value = true;
+};
+
+const closeBookingModal = () => {
+  bookingModalOpen.value = false;
+  bookingSubmitError.value = "";
+  bookingSubmitSuccess.value = "";
+};
+
+watch([bookingType, selectedRouteId, selectedRouteDate], async ([type, routeId, routeDate]) => {
+  if (type !== "route") return;
+  routeAvailability.value = null;
+  availabilityError.value = "";
+  selectedStartTime.value = "";
+  selectedJoinOuting.value = null;
+  if (!routeId || !routeDate) return;
+  availabilityPending.value = true;
+  try {
+    routeAvailability.value = await getRouteAvailability(routeId, routeDate);
+  } catch (error) {
+    availabilityError.value = parseApiError(error);
+  } finally {
+    availabilityPending.value = false;
+  }
+});
+
+watch([bookingType, selectedRouteId, selectedCheckinDate], async ([type, routeId, checkinDate]) => {
+  if (type !== "weekend_tour") return;
+  weekendAvailability.value = null;
+  availabilityError.value = "";
+  if (!routeId || !checkinDate) return;
+  availabilityPending.value = true;
+  try {
+    weekendAvailability.value = await getWeekendAvailability(routeId, checkinDate);
+  } catch (error) {
+    availabilityError.value = parseApiError(error);
+  } finally {
+    availabilityPending.value = false;
+  }
+});
+
+watch([bookingType, selectedRouteId], ([type, routeId]) => {
+  if (!routeId) return;
+  if (type === "route") {
+    selectedCheckinDate.value = "";
+    weekendAvailability.value = null;
+  } else {
+    selectedRouteDate.value = "";
+    routeAvailability.value = null;
+    selectedStartTime.value = "";
+    selectedJoinOuting.value = null;
+  }
+});
+
+watch(bookingType, (type) => {
+  const list = type === "weekend_tour" ? weekendRoutes.value : routes.value;
+  if (!list.some((item) => Number(item.id) === Number(selectedRouteId.value))) {
+    selectedRouteId.value = list[0]?.id || null;
+  }
+});
+
+const submitBooking = async () => {
+  bookingSubmitError.value = "";
+  bookingSubmitSuccess.value = "";
+  if (!selectedRouteId.value) {
+    bookingSubmitError.value = "Выберите маршрут.";
+    return;
+  }
+  if (!contactName.value.trim()) {
+    bookingSubmitError.value = "Укажите имя для обратной связи.";
+    return;
+  }
+  const phoneDigits = (contactPhone.value || "").replace(/\D/g, "");
+  if (!contactEmail.value.trim() && phoneDigits.length < 10) {
+    bookingSubmitError.value = "Укажите телефон или email для связи.";
+    return;
+  }
+  if (!consentAccepted.value) {
+    bookingSubmitError.value = "Подтвердите согласие на обработку персональных данных.";
+    return;
+  }
+
+  const payload = {
+    booking_type: bookingType.value,
+    route: Number(selectedRouteId.value),
+    vehicles_count: Number(vehiclesCount.value || 1),
+    people_count: peopleCount.value ? Number(peopleCount.value) : null,
+    contact_name: contactName.value.trim(),
+    contact_phone: contactPhone.value.trim(),
+    contact_email: contactEmail.value.trim(),
+    comment: comment.value.trim(),
+  };
+
+  if (bookingType.value === "route") {
+    if (!selectedRouteDate.value) {
+      bookingSubmitError.value = "Укажите дату выезда.";
+      return;
+    }
+    if (!selectedStartTime.value && !selectedJoinOuting.value) {
+      bookingSubmitError.value = "Выберите время или присоединение к группе.";
+      return;
+    }
+    payload.date = selectedRouteDate.value;
+    if (selectedJoinOuting.value) {
+      payload.join_outing = Number(selectedJoinOuting.value);
+    } else {
+      payload.start_time = selectedStartTime.value;
+    }
+  } else {
+    if (!selectedCheckinDate.value) {
+      bookingSubmitError.value = "Укажите дату заезда.";
+      return;
+    }
+    if (!isFridayIsoDate(selectedCheckinDate.value)) {
+      bookingSubmitError.value = "Для тура выходного дня выберите пятницу.";
+      return;
+    }
+    payload.checkin_date = selectedCheckinDate.value;
+  }
+
+  isSubmittingBooking.value = true;
+  try {
+    const result = await createTourBooking(payload);
+    bookingSubmitSuccess.value = result?.message || "Заявка успешно отправлена.";
+    bookingSubmitError.value = "";
+  } catch (error) {
+    bookingSubmitError.value = parseApiError(error);
+  } finally {
+    isSubmittingBooking.value = false;
+  }
+};
+
+watch(bookingModalOpen, (isOpen) => {
+  if (typeof document === "undefined") return;
+  if (isOpen) {
+    previousBodyOverflow.value = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return;
+  }
+  document.body.style.overflow = previousBodyOverflow.value;
+});
+
+onBeforeUnmount(() => {
+  if (typeof document !== "undefined") {
+    document.body.style.overflow = previousBodyOverflow.value;
+  }
+});
 
 const tourGallery = [
   { src: galleryHero11, alt: "Участник тура на квадроцикле" },
@@ -238,23 +423,53 @@ const tourGallery = [
   { src: galleryHero7, alt: "Квадроцикл в динамике" },
 ];
 
+// Бренд добавляется глобальным titleTemplate, в title его не дублируем.
+const toursTitle = "Квадротуры в Перми и Пермском крае — маршруты и цены";
+const toursDescription =
+  "Квадротуры в Перми и Пермском крае на базе отдыха «Строгановские Просторы»: прокат квадроциклов, маршруты разной сложности, сопровождение гида, экипировка, фото и видео отчёт.";
+
+useSeoMeta({
+  title: toursTitle,
+  description: toursDescription,
+  ogTitle: "Квадротуры в Пермском крае — Строгановские Просторы",
+  ogDescription: toursDescription,
+  ogType: "website",
+  ogLocale: "ru_RU",
+});
+
 useHead({
-  title: "Туры на квадроциклах — Строгановские Просторы",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Квадротуры в Пермском крае: маршруты разной сложности, сопровождение гида, экипировка, фото и видео отчет.",
-    },
-  ],
   link: [{ rel: "canonical", href: `${siteUrl}/tours` }],
 });
+
+useStructuredData({
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "Квадротуры на квадроциклах",
+  name: "Квадротуры в Пермском крае",
+  description: toursDescription,
+  url: `${siteUrl}/tours`,
+  areaServed: ["Пермь", "Пермский край"],
+  provider: {
+    "@type": "Resort",
+    name: "База отдыха «Строгановские Просторы»",
+    url: siteUrl,
+    telephone: "+79026439294",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "RU",
+      addressRegion: "Пермский край",
+      addressLocality: "Ильинский район, п. Ильинский, с. Дмитриевское",
+    },
+  },
+});
+
+useBreadcrumbs([{ name: "Квадротуры", path: "/tours" }]);
 </script>
 
 <template>
   <div class="min-h-screen bg-background text-foreground">
     <ToursHero
-      title="Незабываемые туры на квадроциклах"
+      title="Квадротуры в Пермском крае"
       :intro="heroIntro"
     />
 
@@ -264,7 +479,25 @@ useHead({
           Маршруты
         </h2>
 
-        <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <p
+          v-if="toursError"
+          class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          Не удалось загрузить маршруты. Обновите страницу или попробуйте позже.
+        </p>
+
+        <div
+          v-else-if="toursPending && quadTours.length === 0"
+          class="mt-8 flex items-center gap-3 text-sm text-muted-foreground"
+        >
+          <LoaderCircle class="h-4 w-4 animate-spin" aria-hidden="true" />
+          Загрузка маршрутов...
+        </div>
+
+        <div
+          v-else-if="quadTours.length > 0"
+          class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4"
+        >
           <article
             v-for="tour in quadTours"
             :key="tour.id"
@@ -312,16 +545,24 @@ useHead({
                 {{ formatRub(tour.price) }}
               </p>
 
-              <a
-                href="#request"
+              <button
+                type="button"
+                @click="openBookingModal('route', tour.id)"
                 class="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Забронировать
                 <ArrowRight class="h-4 w-4" aria-hidden="true" />
-              </a>
+              </button>
             </div>
           </article>
         </div>
+
+        <p
+          v-else
+          class="mt-6 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground"
+        >
+          Сейчас нет доступных маршрутов.
+        </p>
 
         <p class="mt-8 text-sm leading-relaxed text-muted-foreground">
           * Стоимость указана за 1 человека, который будет управлять квадроциклом, возможность и цена размещения пассажира обговаривается отдельно и зависит от конкретного маршрута. Бронирование квадротуров происходит через оператора с внесением предоплаты в размере 20% от стоимости тура, в стоимость услуги не входит доставка клиента до точки проведения туристического мероприятия и обратный трансфер.
@@ -376,7 +617,7 @@ useHead({
               Маршрут, проживание и отдых в одном предложении
             </h2>
             <p class="mt-5 text-base leading-relaxed text-muted-foreground md:text-lg">
-              Формат для тех, кто хочет приехать на базу на весь уикенд: выбрать квадромаршрут, переночевать в комфортном доме, поужинать без спешки и добавить спокойный отдых после активной поездки.
+              {{ weekendIntro }}
             </p>
 
 
@@ -413,10 +654,14 @@ useHead({
                   <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
                 </div>
                 <div class="p-6 md:p-7">
-                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                    Выбранный маршрут
-                  </p>
-                  <h3 class="mt-3 font-serif text-2xl text-primary md:text-3xl">
+                  <div
+                    v-if="option.difficulty"
+                    class="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+                  >
+                    <Gauge class="h-3.5 w-3.5 text-primary/70" aria-hidden="true" />
+                    <span>{{ option.difficulty }}</span>
+                  </div>
+                  <h3 class="font-serif text-2xl text-primary md:text-3xl">
                     {{ option.title }}
                   </h3>
                   <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -431,12 +676,23 @@ useHead({
                   <p class="mt-2 font-serif text-3xl font-semibold text-primary">
                     {{ formatRub(option.price) }}
                   </p>
-                  <p class="mt-2 text-sm text-muted-foreground">
+                  <p
+                    v-if="option.oldPrice"
+                    class="mt-2 text-sm text-muted-foreground"
+                  >
                     Обычная цена
                     <span class="ml-1 text-base font-semibold text-foreground line-through">
                       {{ formatRub(option.oldPrice) }}
                     </span>
                   </p>
+                  <button
+                    type="button"
+                    @click="openBookingModal('weekend_tour', option.id)"
+                    class="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Забронировать тур
+                    <ArrowRight class="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </article>
@@ -542,15 +798,16 @@ useHead({
 
         <div class="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-primary/20 bg-primary px-6 py-5 text-primary-foreground md:px-8">
           <p class="max-w-2xl text-sm leading-relaxed md:text-base">
-            Итоговая стоимость зависит от выбранного маршрута. Сейчас для тура выходного дня доступны два направления, но формат рассчитан на расширение программы.
+            Итоговая стоимость зависит от выбранного маршрута. Сейчас для тура выходного дня доступны два направления.
           </p>
-          <a
-            href="#request"
+          <button
+            type="button"
+            @click="openBookingModal('weekend_tour', weekendTourOptions[0]?.id || null)"
             class="inline-flex items-center justify-center gap-2 rounded-full border border-primary-foreground/80 px-6 py-3 text-sm font-semibold uppercase tracking-wide transition-colors hover:bg-primary-foreground hover:text-primary"
           >
             Забронировать уикенд
             <ArrowRight class="h-4 w-4" aria-hidden="true" />
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -662,17 +919,297 @@ useHead({
             >
               {{ bookingPhone }}
             </a>
-            <a
-              href="#tours-list"
+            <button
+              type="button"
+              @click="openBookingModal('route', quadTours[0]?.id || null)"
               class="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-7 py-3 text-sm font-semibold uppercase tracking-wide text-primary transition-colors hover:border-primary/80 hover:bg-primary/5"
             >
               Выбрать маршрут
               <ArrowRight class="h-4 w-4" aria-hidden="true" />
-            </a>
+            </button>
           </div>
         </div>
       </div>
     </section>
+
+    <div
+      v-if="bookingModalOpen"
+      class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-8"
+      @click.self="closeBookingModal"
+    >
+      <div class="flex max-h-[calc(100vh-4rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-xl">
+        <div class="flex shrink-0 items-start justify-between gap-4 border-b border-border/70 bg-background px-6 py-5 md:px-8">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              {{ bookingType === 'weekend_tour' ? 'Тур выходного дня' : 'Маршрут' }}
+            </p>
+            <h3 class="mt-2 font-serif text-2xl text-primary md:text-3xl">
+              Бронирование
+            </h3>
+          </div>
+          <button
+            type="button"
+            @click="closeBookingModal"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            aria-label="Закрыть окно бронирования"
+          >
+            <X class="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div class="booking-modal-scroll grid gap-5 overflow-y-auto px-6 py-6 md:px-8">
+          <label class="grid gap-2 text-sm">
+            <span class="font-semibold text-foreground">Тип заявки</span>
+            <select
+              v-model="bookingType"
+              class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+            >
+              <option value="route">Маршрут</option>
+              <option value="weekend_tour">Тур выходного дня</option>
+            </select>
+          </label>
+
+          <label class="grid gap-2 text-sm">
+            <span class="font-semibold text-foreground">Маршрут</span>
+            <select
+              v-model="selectedRouteId"
+              class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+            >
+              <option :value="null" disabled>Выберите маршрут</option>
+              <option
+                v-for="route in bookingRoutes"
+                :key="route.id"
+                :value="route.id"
+              >
+                {{ route.title }}
+              </option>
+            </select>
+          </label>
+
+          <div
+            v-if="bookingType === 'route'"
+            class="grid gap-4"
+          >
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Дата выезда</span>
+              <input
+                v-model="selectedRouteDate"
+                type="date"
+                @click="openNativeDatePicker"
+                @focus="openNativeDatePicker"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+
+            <div v-if="availabilityPending" class="flex items-center gap-2 text-sm text-muted-foreground">
+              <LoaderCircle class="h-4 w-4 animate-spin" aria-hidden="true" />
+              Проверяем доступность...
+            </div>
+
+            <div
+              v-if="selectedRouteDate && routeAvailability"
+              class="grid gap-4 rounded-2xl border border-border bg-card p-4"
+            >
+              <div v-if="availableSlots.length > 0" class="grid gap-2 text-sm">
+                <span class="font-semibold text-foreground">Свободные слоты</span>
+                <select
+                  v-model="selectedStartTime"
+                  @change="selectedJoinOuting = null"
+                  class="rounded-xl border border-border bg-background px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+                >
+                  <option value="">Выберите время</option>
+                  <option
+                    v-for="slot in availableSlots"
+                    :key="slot"
+                    :value="formatIsoTime(slot)"
+                  >
+                    {{ formatIsoDateTime(slot) }}
+                  </option>
+                </select>
+              </div>
+
+              <div v-if="availableFormingOutings.length > 0" class="grid gap-2 text-sm">
+                <span class="font-semibold text-foreground">Или присоединиться к группе</span>
+                <select
+                  v-model="selectedJoinOuting"
+                  @change="selectedStartTime = ''"
+                  class="rounded-xl border border-border bg-background px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+                >
+                  <option :value="null">Не присоединяться</option>
+                  <option
+                    v-for="outing in availableFormingOutings"
+                    :key="outing.id"
+                    :value="outing.id"
+                  >
+                    {{ formatIsoDateTime(outing.start_at) }} — в группе {{ outing.total_vehicles }} из {{ outing.min_vehicles }}
+                  </option>
+                </select>
+              </div>
+
+              <p
+                v-if="availableSlots.length === 0 && availableFormingOutings.length === 0"
+                class="text-sm text-muted-foreground"
+              >
+                На выбранную дату нет доступных слотов.
+              </p>
+            </div>
+          </div>
+
+          <div
+            v-else
+            class="grid gap-4"
+          >
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Дата заезда (пятница)</span>
+              <input
+                v-model="selectedCheckinDate"
+                type="date"
+                min="2024-01-05"
+                step="7"
+                @click="openNativeDatePicker"
+                @focus="openNativeDatePicker"
+                @change="handleWeekendDateChange"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+
+            <div
+              v-if="selectedCheckinDate && weekendAvailability"
+              class="rounded-2xl border border-border bg-card p-4 text-sm"
+            >
+              <p class="text-foreground">
+                Выезд:
+                <span class="font-semibold">
+                  {{ formatIsoDateTime(weekendAvailability.outing_start) }}
+                </span>
+              </p>
+              <p class="mt-1 text-muted-foreground">
+                Статус:
+                <span class="font-semibold text-foreground">
+                  {{ weekendAvailability.can_request ? 'можно отправить заявку' : 'временное ограничение по ресурсам' }}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Квадроциклов</span>
+              <input
+                v-model.number="vehiclesCount"
+                type="number"
+                min="1"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Человек</span>
+              <input
+                v-model.number="peopleCount"
+                type="number"
+                min="1"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Имя</span>
+              <input
+                v-model="contactName"
+                type="text"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+            <label class="grid gap-2 text-sm">
+              <span class="font-semibold text-foreground">Телефон</span>
+              <input
+                v-model="contactPhone"
+                type="tel"
+                class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+              >
+            </label>
+          </div>
+
+          <label class="grid gap-2 text-sm">
+            <span class="font-semibold text-foreground">E-mail</span>
+            <input
+              v-model="contactEmail"
+              type="email"
+              class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+            >
+          </label>
+
+          <label class="grid gap-2 text-sm">
+            <span class="font-semibold text-foreground">Комментарий</span>
+            <textarea
+              v-model="comment"
+              rows="3"
+              class="rounded-xl border border-border bg-card px-3 py-2.5 text-foreground outline-none transition-colors focus:border-primary"
+            ></textarea>
+          </label>
+
+          <div class="flex gap-3 text-left">
+            <input
+              id="tour-booking-consent"
+              v-model="consentAccepted"
+              type="checkbox"
+              class="mt-0.5 h-4 w-4 shrink-0 rounded border border-input text-primary accent-primary"
+            >
+            <label for="tour-booking-consent" class="text-xs leading-relaxed text-muted-foreground">
+              Я даю
+              <NuxtLink
+                href="/consent.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-primary underline underline-offset-2 hover:text-primary/90"
+              >согласие</NuxtLink>
+              на
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-primary underline underline-offset-2 hover:text-primary/90"
+              >обработку персональных данных</a>.
+            </label>
+          </div>
+
+          <p v-if="availabilityError" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ availabilityError }}
+          </p>
+          <p v-if="bookingSubmitError" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ bookingSubmitError }}
+          </p>
+          <p v-if="bookingSubmitSuccess" class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            {{ bookingSubmitSuccess }}
+          </p>
+
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              @click="closeBookingModal"
+              class="inline-flex items-center justify-center rounded-full border border-border px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              Закрыть
+            </button>
+            <button
+              type="button"
+              :disabled="isSubmittingBooking || !consentAccepted"
+              @click="submitBooking"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-primary px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LoaderCircle
+                v-if="isSubmittingBooking"
+                class="h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
+              Отправить заявку
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <LazyFooterSection />
   </div>
@@ -683,5 +1220,30 @@ useHead({
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.booking-modal-scroll {
+  scrollbar-color: rgba(16, 83, 69, 0.32) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.booking-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(16, 83, 69, 0.28);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.booking-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(16, 83, 69, 0.42);
 }
 </style>

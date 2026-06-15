@@ -9,6 +9,14 @@ import { findLodgeTypeByKind, transformLodgeForSection } from "~/utils/lodge";
 
 const { types: lodgeTypes } = useLodgeTypes();
 
+const siteUrl = useRuntimeConfig().public.siteUrl;
+useHead({
+  title: "Дома",
+  link: [{ rel: "canonical", href: `${siteUrl}/doma` }],
+});
+
+useBreadcrumbs([{ name: "Коттеджи и дома", path: "/doma" }]);
+
 const houseList = computed(() => {
   const cottagesType = findLodgeTypeByKind(lodgeTypes.value, "cottages");
   if (!cottagesType?.lodges?.length) return [];

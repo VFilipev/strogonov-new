@@ -111,10 +111,19 @@ class IsSiteEditor(BasePermission):
 
 
 class AdminStatusView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         user = request.user
+        if not user or not user.is_authenticated:
+            return Response({
+                'is_authenticated': False,
+                'is_staff': False,
+                'is_superuser': False,
+                'can_edit': False,
+                'username': '',
+            })
+
         can_edit = bool(user.is_staff or user.is_superuser)
         return Response({
             'is_authenticated': True,

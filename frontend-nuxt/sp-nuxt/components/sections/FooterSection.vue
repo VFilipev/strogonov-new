@@ -29,7 +29,7 @@ const { showServicesNav } = useNavVisibility();
               >
             </li>
             <li v-if="showServicesNav">
-              <NuxtLink to="/services" class="transition-colors hover:text-foreground"
+              <NuxtLink to="/uslugi" class="transition-colors hover:text-foreground"
                 >прайс услуг</NuxtLink
               >
             </li>

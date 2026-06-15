@@ -41,6 +41,8 @@ useHead({
   ],
   link: [{ rel: 'canonical', href: `${siteUrl}/documents` }],
 })
+
+useBreadcrumbs([{ name: 'Документы', path: '/documents' }])
 </script>
 
 <template>

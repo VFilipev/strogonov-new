@@ -46,7 +46,7 @@ const resetPressTrack = () => {
 const getHouseRouteLocation = (item) => {
   if (item.id && item.houseType) {
     return {
-      path: "/lodge",
+      path: "/doma",
       query: {
         houseId: item.id,
         houseType: item.houseType,
@@ -54,9 +54,9 @@ const getHouseRouteLocation = (item) => {
     };
   }
   if (item.slug) {
-    return `/lodge/${item.slug}`;
+    return `/doma/${item.slug}`;
   }
-  return { path: "/lodge" };
+  return { path: "/doma" };
 };
 
 const buildHouseShareUrl = (item) => {

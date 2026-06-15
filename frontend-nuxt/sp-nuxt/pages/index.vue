@@ -26,58 +26,50 @@ useHead({
   ],
 });
 
+const homeTitle =
+  "База отдыха в Пермском крае — коттеджи и глэмпинг у Камского моря";
+const homeDescription =
+  "База отдыха «Строгановские Просторы» в Пермском крае: уютные коттеджи и глэмпинг на берегу Камского моря, баня с чаном, квадротуры и активный отдых под Пермью.";
+
 useHead({
-  title: "Строгановские Просторы - Коттеджи и глэмпинг",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
-    },
-  ],
   link: [{ rel: "canonical", href: siteUrl }],
-  script: [
-    {
-      src: "https://widget.bronirui-online.ru/js/app.js",
-      type: "text/javascript",
-      tagPosition: "bodyClose",
-    },
-  ],
 });
 
 useSeoMeta({
-  title: "Строгановские Просторы - Коттеджи и глэмпинг",
-  description:
-    "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
-  ogTitle: "Строгановские Просторы",
-  ogDescription: "Уютные коттеджи и глэмпинг на берегу камского моря",
+  title: homeTitle,
+  description: homeDescription,
+  ogTitle: "База отдыха «Строгановские Просторы» — Пермский край",
+  ogDescription: homeDescription,
   ogImage: `${siteUrl}/images/hero-cottages.jpg`,
   ogUrl: siteUrl,
   ogType: "website",
   ogLocale: "ru_RU",
   twitterCard: "summary_large_image",
-  twitterTitle: "Строгановские Просторы",
-  twitterDescription: "Уютные коттеджи и глэмпинг на берегу камского моря",
+  twitterTitle: "База отдыха «Строгановские Просторы» — Пермский край",
+  twitterDescription: homeDescription,
   twitterImage: `${siteUrl}/images/hero-cottages.jpg`,
 });
 
 useStructuredData({
   "@context": "https://schema.org",
-  "@type": "TouristAttraction",
-  name: "Строгановские Просторы",
-  description:
-    "Уютные коттеджи и глэмпинг на берегу камского моря. Уединённый отдых в хвойном лесу с европейским уровнем комфорта.",
+  "@type": "Resort",
+  name: "База отдыха «Строгановские Просторы»",
+  description: homeDescription,
   url: siteUrl,
   image: `${siteUrl}/images/hero-cottages.jpg`,
+  telephone: "+79026439294",
+  email: "stroganovprostor@gmail.com",
+  priceRange: "₽₽",
   address: {
     "@type": "PostalAddress",
     addressCountry: "RU",
     addressRegion: "Пермский край",
+    addressLocality: "Ильинский район, п. Ильинский, с. Дмитриевское",
   },
-  offers: {
-    "@type": "Offer",
-    priceCurrency: "RUB",
-  },
+  areaServed: ["Пермь", "Пермский край"],
+  sameAs: [
+    "https://yandex.ru/maps/org/stroganovskiye_prostory/1277179994/",
+  ],
 });
 
 const znmsWidgetOptions = {
@@ -105,7 +97,10 @@ const znmsWidgetOptions = {
   },
 };
 
-onMounted(() => {
+// Виджет бронирования подтягивает тяжёлый шрифт (~240 КБ) и блокирует
+// критический путь, раздувая LCP. Грузим его скрипт отложенно — после
+// простоя браузера, когда первый экран уже отрисован.
+const initWidgetWhenReady = () => {
   let n = 0;
   const t = setInterval(() => {
     n += 1;
@@ -117,6 +112,25 @@ onMounted(() => {
       clearInterval(t);
     }
   }, 50);
+};
+
+const loadBookingWidget = () => {
+  if (document.getElementById("znms-widget-script")) return;
+  const s = document.createElement("script");
+  s.id = "znms-widget-script";
+  s.src = "https://widget.bronirui-online.ru/js/app.js";
+  s.async = true;
+  s.onload = initWidgetWhenReady;
+  document.body.appendChild(s);
+};
+
+onMounted(() => {
+  if (!siteIsActive.value) return;
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(loadBookingWidget, { timeout: 3000 });
+  } else {
+    setTimeout(loadBookingWidget, 1500);
+  }
 });
 </script>
 

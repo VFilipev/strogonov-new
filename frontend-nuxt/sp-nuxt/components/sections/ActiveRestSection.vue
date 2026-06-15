@@ -35,6 +35,7 @@ const activities = computed(() => {
     id: a.id,
     image: a.image_webp_url || a.image_url,
     video: a.video_url || null,
+    page_path: a.page_path,
     title: a.title,
     description: a.description,
   }));
@@ -143,7 +144,7 @@ onMounted(() => {
           <NuxtLink
             v-for="(activity, index) in activities"
             :key="activity.id ?? activity.title"
-            to="/services"
+            :to="activity.page_path || '/uslugi'"
             class="group relative block overflow-hidden rounded-2xl border border-border/50 bg-white/70 transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-fade-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             :style="{ animationDelay: `${index * 150}ms` }"
             @mouseenter="handleMouseEnter(index)"

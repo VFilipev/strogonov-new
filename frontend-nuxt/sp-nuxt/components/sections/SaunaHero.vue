@@ -157,13 +157,13 @@ onBeforeUnmount(() => {
           <div class="hidden items-center gap-8 md:flex">
             <a
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              href="/lodge"
+              href="/doma"
               >дома</a
             >
             <NuxtLink
               v-if="showServicesNav"
               class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-              to="/services"
+              to="/uslugi"
               >услуги</NuxtLink
             >
             <NuxtLink
@@ -224,14 +224,14 @@ onBeforeUnmount(() => {
         <div class="flex flex-col gap-3 text-primary-foreground">
           <a
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            href="/lodge"
+            href="/doma"
             @click="closeMobileMenu"
             >дома</a
           >
           <NuxtLink
             v-if="showServicesNav"
             class="transition-all duration-300 text-primary-foreground hover:translate-y-[-2px] hover:text-primary-foreground/80"
-            to="/services"
+            to="/uslugi"
             @click="closeMobileMenu"
             >услуги</NuxtLink
           >

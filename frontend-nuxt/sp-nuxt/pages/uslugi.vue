@@ -242,8 +242,10 @@ useHead({
         "Прайс на услуги базы отдыха Строгановские Просторы: аренда залов, прокат техники, инвентаря, барбекю и дополнительные услуги.",
     },
   ],
-  link: [{ rel: "canonical", href: `${siteUrl}/services` }],
+  link: [{ rel: "canonical", href: `${siteUrl}/uslugi` }],
 });
+
+useBreadcrumbs([{ name: "Услуги и прайс", path: "/uslugi" }]);
 </script>
 
 <template>

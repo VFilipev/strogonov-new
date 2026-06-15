@@ -6,12 +6,18 @@ import saunaImage1 from "~/assets/resort/sauna-1.jpeg";
 import saunaImage2 from "~/assets/resort/sauna-2.jpeg";
 import saunaImage3 from "~/assets/resort/sauna-3.jpeg";
 import saunaImage4 from "~/assets/resort/sauna-4.jpeg";
-import spaImage1 from "~/assets/resort/spa-1.jpeg";
-import spaImage2 from "~/assets/resort/spa-2.jpeg";
-import spaImage3 from "~/assets/resort/spa-3.jpeg";
-import spaImage4 from "~/assets/resort/spa-4.jpeg";
-import spaImage5 from "~/assets/resort/spa-5.jpeg";
-import spaImage6 from "~/assets/resort/spa-6.jpeg";
+import spaImage1 from "~/assets/sauna/spa.webp";
+import spaImage2 from "~/assets/sauna/spa-2.webp";
+import spaImage3 from "~/assets/sauna/spa-3.webp";
+import spaImage4 from "~/assets/sauna/spa-4.webp";
+import spaImage5 from "~/assets/sauna/spa-5.webp";
+import spaImage6 from "~/assets/sauna/spa-6.webp";
+import spaImage7 from "~/assets/sauna/spa-7.webp";
+import spaImage8 from "~/assets/sauna/spa-8.webp";
+import spaImage9 from "~/assets/sauna/spa-9.webp";
+import spaImage10 from "~/assets/sauna/spa-10.webp";
+import spaImage11 from "~/assets/sauna/spa-11.webp";
+import spaImage12 from "~/assets/sauna/spa-12.webp";
 
 const config = useRuntimeConfig();
 const siteUrl = config.public.siteUrl;
@@ -26,7 +32,7 @@ const russianComplexImages = [
   saunaImage4,
 ];
 
-const spaComplexImages = [spaImage3, spaImage2, spaImage1, spaImage4, spaImage5, spaImage6];
+const spaComplexImages = [spaImage3, spaImage2, spaImage1, spaImage4, spaImage5, spaImage6, spaImage7, spaImage8, spaImage9, spaImage10, spaImage11, spaImage12];
 
 useHead({
   title: "Спа и баня — Строгановские Просторы",
@@ -39,6 +45,8 @@ useHead({
   ],
   link: [{ rel: "canonical", href: `${siteUrl}/sauna` }],
 });
+
+useBreadcrumbs([{ name: "Спа и баня", path: "/sauna" }]);
 </script>
 
 <template>

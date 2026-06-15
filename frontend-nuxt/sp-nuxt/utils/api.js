@@ -15,6 +15,24 @@ function joinUrl(baseUrl, path) {
   return `${normalizedBase}${normalizedPath}`;
 }
 
+export function resolveRuntimeApiBase() {
+  const configuredBase = useRuntimeConfig().public.apiBase;
+  if (typeof window === "undefined") return configuredBase;
+
+  try {
+    const url = new URL(configuredBase);
+    const localHosts = ["localhost", "127.0.0.1"];
+    if (localHosts.includes(url.hostname) && localHosts.includes(window.location.hostname)) {
+      url.hostname = window.location.hostname;
+      return url.toString().replace(/\/$/, "");
+    }
+  } catch {
+    return configuredBase;
+  }
+
+  return configuredBase;
+}
+
 async function _save(url, obj, config = {}) {
   const payload = obj ?? {};
   const id = payload instanceof FormData ? payload.get("id") : payload.id;
@@ -77,7 +95,7 @@ export function createApi(baseUrl, apiPath) {
 
 function createRuntimeApi(apiPath) {
   const normalizedPath = appendSlash(apiPath);
-  const baseUrl = () => joinUrl(useRuntimeConfig().public.apiBase, normalizedPath);
+  const baseUrl = () => joinUrl(resolveRuntimeApiBase(), normalizedPath);
 
   return {
     async save(obj, config = {}) {
@@ -112,3 +130,9 @@ export const RestaurantImagesApi = createRuntimeApi("/restaurant/images/");
 export const MealTypesApi = createRuntimeApi("/restaurant/meal-types/");
 export const BenefitsApi = createRuntimeApi("/restaurant/benefits/");
 export const EventCalculatorRequestsApi = createRuntimeApi("/events/requests/");
+export const ToursRoutesApi = createRuntimeApi("/tours/routes/");
+export const ToursWeekendApi = createRuntimeApi("/tours/weekend/");
+export const ToursAvailabilityApi = createRuntimeApi("/tours/availability/");
+export const ToursWeekendAvailabilityApi = createRuntimeApi("/tours/weekend-availability/");
+export const ToursBookingsApi = createRuntimeApi("/tours/bookings/");
+export const ToursScheduleApi = createRuntimeApi("/tours/schedule/");
