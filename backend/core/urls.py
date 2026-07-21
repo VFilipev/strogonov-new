@@ -5,6 +5,7 @@ from .views import (
     CsrfTokenView, HeroSectionPatchView, StatisticPatchView,
     GalleryImageAdminListView, GalleryImageUploadView, GalleryLayoutApplyView,
     GuestFeedbackViewSet,
+    FrequentlyAskedQuestionViewSet,
     robots_txt
 )
 from .api_views import api_root
@@ -14,6 +15,7 @@ router = DefaultRouter()
 router.register(r'statistics', StatisticViewSet, basename='statistic')
 router.register(r'gallery', GalleryImageViewSet, basename='galleryimage')
 router.register(r'guest-feedback', GuestFeedbackViewSet, basename='guestfeedback')
+router.register(r'faq', FrequentlyAskedQuestionViewSet, basename='faq')
 
 urlpatterns = [
     path('', api_root, name='api-root'),

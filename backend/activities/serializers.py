@@ -1,4 +1,9 @@
+import re
+
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from rest_framework import serializers
+
 from .models import Activity
 
 
@@ -10,14 +15,36 @@ class ActivitySerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(source='get_category_display', read_only=True)
     season_display = serializers.CharField(source='get_season_display', read_only=True)
     seo_fields = serializers.SerializerMethodField()
+    description_html = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
         fields = [
             'id', 'category', 'category_display', 'season', 'season_display',
-            'title', 'slug', 'description', 'page_path', 'image_url', 'image_webp_url',
+            'title', 'slug', 'short_description', 'description', 'description_html',
+            'page_path', 'image_url', 'image_webp_url',
             'video_url', 'is_active', 'order', 'seo_fields'
         ]
+
+    def get_description_html(self, obj):
+        """Render safe emphasis markup and line breaks."""
+        value = escape(obj.description or '')
+        value = re.sub(
+            r'\*\*\*(.+?)\*\*\*',
+            r'<strong><em>\1</em></strong>',
+            value,
+            flags=re.DOTALL,
+        )
+        value = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', value, flags=re.DOTALL)
+        value = re.sub(
+            r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)',
+            r'<em>\1</em>',
+            value,
+            flags=re.DOTALL,
+        )
+        return mark_safe(
+            value.replace('\r\n', '\n').replace('\r', '\n').replace('\n', '<br>')
+        )
 
     def get_image_url(self, obj):
         if obj.image:
@@ -60,4 +87,3 @@ class ActivitySerializer(serializers.ModelSerializer):
             'canonical_url': obj.canonical_url,
             'robots_meta': obj.robots_meta,
         }
-

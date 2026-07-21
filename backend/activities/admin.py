@@ -6,13 +6,16 @@ from .models import Activity
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ['title', 'category', 'season', 'is_active', 'order']
     list_filter = ['category', 'season', 'is_active']
-    search_fields = ['title', 'description']
+    search_fields = ['title', 'short_description', 'description']
     prepopulated_fields = {'slug': ('title',)}
     ordering = ['category', 'season', 'order', 'title']
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('category', 'season', 'title', 'slug', 'description', 'page_path', 'is_active', 'order')
+            'fields': (
+                'category', 'season', 'title', 'slug', 'short_description',
+                'description', 'page_path', 'is_active', 'order'
+            )
         }),
         ('Медиа', {
             'fields': ('image', 'video')

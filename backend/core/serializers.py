@@ -9,6 +9,7 @@ from .models import (
     SiteSettings,
     GuestFeedback,
     AfishaEvent,
+    FrequentlyAskedQuestion,
 )
 from .utils import get_image_url, format_afisha_event_date_label
 from .serializer_mixins import ImageVariantsMixin
@@ -18,6 +19,12 @@ class StatisticSerializer(serializers.ModelSerializer):
     class Meta:
         model = Statistic
         fields = ['id', 'number', 'label', 'description', 'is_active', 'order']
+
+
+class FrequentlyAskedQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FrequentlyAskedQuestion
+        fields = ['id', 'question', 'answer', 'order']
 
 
 class GalleryImageSerializer(ImageVariantsMixin, serializers.ModelSerializer):
@@ -553,4 +560,3 @@ class GuestFeedbackSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(url)
         return url
-

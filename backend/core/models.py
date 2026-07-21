@@ -609,3 +609,21 @@ class AfishaEvent(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.get_category_display()}, {self.event_date})'
+
+
+class FrequentlyAskedQuestion(models.Model):
+    question = models.CharField(max_length=500, verbose_name='Вопрос')
+    answer = models.TextField(
+        verbose_name='Ответ',
+        help_text='Переносы строк сохраняются при отображении на сайте.',
+    )
+    order = models.PositiveIntegerField(default=0, verbose_name='Порядок сортировки')
+    is_active = models.BooleanField(default=True, verbose_name='Показывать на сайте')
+
+    class Meta:
+        verbose_name = 'Часто задаваемый вопрос'
+        verbose_name_plural = 'Часто задаваемые вопросы'
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.question

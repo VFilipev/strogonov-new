@@ -9,7 +9,10 @@ from django.http import HttpResponse
 from django.middleware.csrf import get_token
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
-from .models import Statistic, GalleryImage, HeroSection, SiteSettings, GuestFeedback, AfishaEvent
+from .models import (
+    Statistic, GalleryImage, HeroSection, SiteSettings, GuestFeedback,
+    AfishaEvent, FrequentlyAskedQuestion,
+)
 from .serializers import (
     StatisticSerializer, GalleryImageSerializer,
     HeroSectionSerializer, SiteSettingsSerializer,
@@ -17,7 +20,19 @@ from .serializers import (
     GalleryImageUploadSerializer, GalleryLayoutApplySerializer,
     GuestFeedbackCreateSerializer, GuestFeedbackSerializer,
     AfishaEventSerializer,
+    FrequentlyAskedQuestionSerializer,
 )
+
+
+class FrequentlyAskedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = FrequentlyAskedQuestion.objects.filter(is_active=True)
+    serializer_class = FrequentlyAskedQuestionSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['order']
+    ordering = ['order', 'id']
+
+
 class StatisticViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Statistic.objects.filter(is_active=True)

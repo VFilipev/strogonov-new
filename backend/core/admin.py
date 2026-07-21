@@ -2,7 +2,10 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 from solo.admin import SingletonModelAdmin
-from .models import SiteSettings, Statistic, GalleryImage, HeroSection, HeroImage, GuestFeedback, AfishaEvent
+from .models import (
+    SiteSettings, Statistic, GalleryImage, HeroSection, HeroImage,
+    GuestFeedback, AfishaEvent, FrequentlyAskedQuestion,
+)
 
 
 @admin.register(SiteSettings)
@@ -57,6 +60,24 @@ class StatisticAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Основная информация', {
             'fields': ('number', 'label', 'description', 'is_active', 'order')
+        }),
+    )
+
+
+@admin.register(FrequentlyAskedQuestion)
+class FrequentlyAskedQuestionAdmin(admin.ModelAdmin):
+    list_display = ['question', 'is_active', 'order']
+    list_editable = ['is_active', 'order']
+    list_filter = ['is_active']
+    search_fields = ['question', 'answer']
+    ordering = ['order', 'id']
+
+    fieldsets = (
+        ('Содержание', {
+            'fields': ('question', 'answer'),
+        }),
+        ('Публикация', {
+            'fields': ('is_active', 'order'),
         }),
     )
 
@@ -198,4 +219,3 @@ class GuestFeedbackAdmin(admin.ModelAdmin):
             'fields': ('message', 'attachment'),
         }),
     )
-

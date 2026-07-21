@@ -45,7 +45,17 @@ class Activity(SEOMixin):
     )
     description = models.TextField(
         verbose_name='Описание',
-        help_text='Подробное описание активности'
+        help_text=(
+            'Поддерживается разметка: *курсив*, **жирный**, '
+            '***жирный курсив***. Переносы строк сохраняются.'
+        )
+    )
+    short_description = models.CharField(
+        max_length=300,
+        blank=True,
+        default='',
+        verbose_name='Краткое описание',
+        help_text='Короткий текст для лицевой стороны карточки'
     )
     image = models.ImageField(
         upload_to='activities/',
