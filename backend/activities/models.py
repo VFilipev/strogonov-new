@@ -44,6 +44,7 @@ class Activity(SEOMixin):
         help_text='Уникальный URL-адрес для активности'
     )
     description = models.TextField(
+        blank=True,
         verbose_name='Описание',
         help_text=(
             'Поддерживается разметка: *курсив*, **жирный**, '
