@@ -1,8 +1,9 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.text import slugify
 from django.urls import reverse
 from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 from core.models import SEOMixin
 
 
@@ -66,9 +67,21 @@ class Activity(SEOMixin):
     )
     image_webp = ImageSpecField(
         source='image',
-        processors=[ResizeToFill(1920, 1080)],
+        processors=[ResizeToFit(1920, 1920, upscale=False)],
         format='WEBP',
         options={'quality': 85}
+    )
+    image_position_x = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name='Фокус изображения по горизонтали, %',
+        help_text='0 — левый край, 50 — центр, 100 — правый край',
+    )
+    image_position_y = models.PositiveSmallIntegerField(
+        default=50,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name='Фокус изображения по вертикали, %',
+        help_text='0 — верхний край, 50 — центр, 100 — нижний край',
     )
     video = models.FileField(
         upload_to='activities/videos/',

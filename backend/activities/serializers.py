@@ -23,6 +23,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             'id', 'category', 'category_display', 'season', 'season_display',
             'title', 'slug', 'short_description', 'description', 'description_html',
             'page_path', 'image_url', 'image_webp_url',
+            'image_position_x', 'image_position_y',
             'video_url', 'is_active', 'order', 'seo_fields'
         ]
 

@@ -18,7 +18,9 @@ class ActivityAdmin(admin.ModelAdmin):
             )
         }),
         ('Медиа', {
-            'fields': ('image', 'video')
+            'fields': (
+                'image', ('image_position_x', 'image_position_y'), 'video'
+            )
         }),
         ('SEO', {
             'classes': ('collapse',),
